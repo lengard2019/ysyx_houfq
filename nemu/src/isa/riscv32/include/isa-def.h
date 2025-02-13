@@ -19,9 +19,9 @@
 #include <common.h>
 
 typedef struct {
-  word_t gpr[MUXDEF(CONFIG_RVE, 16, 32)];
+  word_t gpr[MUXDEF(CONFIG_RVE, 16, 32)];//寄存器
   vaddr_t pc;
-} MUXDEF(CONFIG_RV64, riscv64_CPU_state, riscv32_CPU_state);
+} MUXDEF(CONFIG_RV64, riscv64_CPU_state, riscv32_CPU_state);//MUXDEF是个选择函数，当macro被定义时，返回X，当未被定义时，返回Y
 
 // decode
 typedef struct {
