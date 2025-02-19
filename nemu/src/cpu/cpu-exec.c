@@ -41,7 +41,7 @@ static void trace_and_difftest(Decode *_this, vaddr_t dnpc) {
 }
 
 static void exec_once(Decode *s, vaddr_t pc) {
-  s->pc = pc;
+  s->pc = pc;//pc=uint_64
   s->snpc = pc;
   isa_exec_once(s);
   cpu.pc = s->dnpc;
@@ -73,7 +73,8 @@ static void exec_once(Decode *s, vaddr_t pc) {
 
 static void execute(uint64_t n) {
   Decode s;
-  for (;n > 0; n --) {//n = -1时不执行
+  for (;n > 0; n --) {//unint64，若-1则传入最大的64位数
+    // printf("mark\n");
     exec_once(&s, cpu.pc);
     g_nr_guest_inst ++;
     trace_and_difftest(&s, cpu.pc);
@@ -103,7 +104,7 @@ void cpu_exec(uint64_t n) {
     case NEMU_END: case NEMU_ABORT: case NEMU_QUIT:
       printf("Program execution has ended. To restart the program, exit NEMU and run again.\n");
       return;
-    default: nemu_state.state = NEMU_RUNNING;
+    default: nemu_state.state = NEMU_RUNNING;//NEMU_RUNNING或NEMU_STOP
   }
 
   uint64_t timer_start = get_time();
