@@ -65,6 +65,8 @@ static int cmd_info(char *args);
 
 static int cmd_x(char *args);
 
+static int cmd_p(char *args);
+
 static struct {
   const char *name;
   const char *description;
@@ -73,9 +75,10 @@ static struct {
   { "help", "Display information about all supported commands", cmd_help },
   { "c", "Continue the execution of the program", cmd_c },
   { "q", "Exit NEMU", cmd_q },
-  { "si", "execute N steps of the program", cmd_si},
-  { "info", "print the situation of the program, r/w", cmd_info},
-  { "x", "scan ddr", cmd_x},
+  { "si", "Execute N steps of the program", cmd_si},
+  { "info", "Print the situation of the program, r/w", cmd_info},
+  { "x", "Scan ddr", cmd_x},
+  { "p", "Mathematical expression evaluation", cmd_p}
 
 
   /* TODO: Add more commands */
@@ -84,13 +87,38 @@ static struct {
 
 #define NR_CMD ARRLEN(cmd_table)
 
+
+
 static int cmd_si(char *args){
-    int step = 0;
-    if(args == NULL)
-        step = 1;
-    else
-        sscanf(args,"%d",&step);// 读入 Step
-    cpu_exec(step);
+  int step = 0;
+  if(args == NULL)
+    step = 1;
+  else
+    sscanf(args,"%d",&step);// 读入 Step
+  cpu_exec(step);
+  return 0;
+}
+
+static int cmd_p(char *args){
+    //printf("%s",args);
+
+    if(args == NULL){
+        printf("No args\n");
+        return 0;
+    }
+
+    bool *a = false;
+    word_t result = expr(args,a);
+    printf("%d\n", result);
+
+    // for test
+    // for(int i = 0; i < 100; i++){
+    //   char *e = gen_expr();
+    //   bool *a = false;
+    //   word_t result = expr(e,a);
+    //   printf("%d\n", result);
+    // }
+
     return 0;
 }
 
@@ -103,8 +131,8 @@ static int cmd_x(char *args){
     sscanf(baseaddr,"%x", &addr);
     for(int i = 0 ; i < len ; i ++)
     {
-        printf("%x\n", paddr_read(addr,4));//addr len
-        addr = addr + 4;
+      printf("%x\n", paddr_read(addr,4));//addr len
+      addr = addr + 4;
     }
     return 0;
 }

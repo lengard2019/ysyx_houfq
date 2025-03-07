@@ -20,4 +20,12 @@
 
 word_t expr(char *e, bool *success);
 
+char* gen_expr();
+
+typedef struct token {
+  int type;
+  char str[32];
+} Token;
+
+
 #endif
