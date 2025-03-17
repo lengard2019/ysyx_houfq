@@ -67,6 +67,10 @@ static int cmd_x(char *args);
 
 static int cmd_p(char *args);
 
+static int cmd_w(char *args);
+
+static int cmd_d(char *args);
+
 static struct {
   const char *name;
   const char *description;
@@ -75,10 +79,12 @@ static struct {
   { "help", "Display information about all supported commands", cmd_help },
   { "c", "Continue the execution of the program", cmd_c },
   { "q", "Exit NEMU", cmd_q },
-  { "si", "Execute N steps of the program", cmd_si},
-  { "info", "Print the situation of the program, r/w", cmd_info},
-  { "x", "Scan ddr", cmd_x},
-  { "p", "Mathematical expression evaluation", cmd_p}
+  { "si", "Execute N steps of the program", cmd_si },
+  { "info", "Print the situation of the program, r/w", cmd_info },
+  { "x", "Scan ddr", cmd_x },
+  { "p", "Mathematical expression evaluation", cmd_p },
+  { "w", "Set your watchponits", cmd_w },
+  { "d", "Delete watchponits", cmd_d }
 
 
   /* TODO: Add more commands */
@@ -107,10 +113,11 @@ static int cmd_p(char *args){
         return 0;
     }
 
-    bool *a = false;
-    word_t result = expr(args,a);
+    bool a = false;
+    word_t result = expr(args,&a);
+    // printf("mark\n");
     printf("%d\n", result);
-
+    
     // for test
     // for(int i = 0; i < 100; i++){
     //   char *e = gen_expr();
@@ -137,14 +144,28 @@ static int cmd_x(char *args){
     return 0;
 }
 
+static int cmd_d(char* args){
+  if(args == NULL){
+    printf("No args.\n");
+  }   
+  else{
+    delete_watchpoint(atoi(args));
+  }
+  return 0;
+}
+
+static int cmd_w(char* args){
+  create_watchpoint(args);
+  return 0;
+}
 
 static int cmd_info(char *args){
     if(args == NULL)
         printf("No args.\n");
     else if(strcmp(args, "r") == 0)
         isa_reg_display();//寄存器
-    // else if(strcmp(args, "w") == 0)
-    //     sdb_watchpoint_display();//监视点
+    else if(strcmp(args, "w") == 0)
+        sdb_watchpoint_display();//监视点
     return 0;
 }
 

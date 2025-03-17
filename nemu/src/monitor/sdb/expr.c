@@ -35,10 +35,8 @@ enum {
   NOTEQ     = 9,
   REQ       = 10,
   REG       = 11,
-  HEX       = 12,
-  OR        = 13,
-  AND       = 14,
-  NOT       = 15,
+  OR        = 12,
+  AND       = 13,
 
   /* TODO: Add more token types */
 
@@ -66,10 +64,8 @@ static struct rule {
   {"\\!\\=", NOTEQ},
   {"\\>\\=", REQ},
   {"\\$\\$0|\\$ra|\\$sp|\\$gp|\\$tp|\\$t[0-6]|\\$s[0-9]|\\$s1[0-1]|\\$a[0-7]", REG},
-  {"\\@@", HEX},
   {"\\|\\|", OR},
   {"\\&\\&", AND},
-  {"\\!", NOT},
 };
 
 #define NR_REGEX ARRLEN(rules)
@@ -236,12 +232,6 @@ static bool make_token(char *e) {
               nr_token ++;
               break;
 
-          case(HEX):
-              tokens[nr_token].type = HEX;
-              strncpy(tokens[nr_token].str, &e[position - substr_len], substr_len);
-              nr_token ++;
-              break;
-
           case(LEQ):
               tokens[nr_token].type = LEQ;
               strcpy(tokens[nr_token].str, "<=");
@@ -269,12 +259,6 @@ static bool make_token(char *e) {
           case(AND):
               tokens[nr_token].type = AND;
               strcpy(tokens[nr_token].str, "&&");
-              nr_token ++;
-              break;
-
-          case(NOT):
-              tokens[nr_token].type = NOT;
-              strcpy(tokens[nr_token].str, "!");
               nr_token ++;
               break;
 
@@ -324,16 +308,15 @@ static void token_special(){
 	    ||(tokens[i].type == MULTI && i == 0))
 	  {
       tokens[i].type = TK_NOTYPE;
-      // printf("mark\n");
-      // printf("%s\n", tokens[i+1].str);
-      // printf("%s\n",tokens[i+1].str);
+
       paddr_t addr = 0;
       sscanf(tokens[i+1].str,"%x", &addr);
       // printf("%d\n",addr);
       word_t value = paddr_read(addr,4);
       // printf("%d\n",value);
       int2char((int)value, tokens[i+1].str);
-      printf("%s\n",tokens[i+1].str);
+      // printf("mark\n");
+      // printf("%s\n",tokens[i+1].str);
       for(int j = 0 ; j < nr_token ; j ++){
         if(tokens[j].type == TK_NOTYPE){
           for(int k = j +1 ; k < nr_token ; k ++){
@@ -344,7 +327,7 @@ static void token_special(){
       }    	    
     }
   }
-  
+
   /*
    * Init the tokens NUM
   */
@@ -401,8 +384,6 @@ static void token_special(){
 	  }
   }
 }
-
-
 
 static bool check_parentheses(int p, int q)//判断总式或子式是否符合要求
 {
@@ -571,6 +552,7 @@ word_t expr(char *e, bool *success) {
 
   // /* TODO: Insert codes to evaluate the expression. */
   result = eval(0, nr_token - 1);
+  *success = true;
   for (int i = 0; i < nr_token; i++){
     tokens[i].type = 0;
     memset(tokens[i].str, '\0', sizeof(tokens[i].str));
