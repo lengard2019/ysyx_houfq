@@ -18,6 +18,7 @@
 #include <cpu/difftest.h>
 #include <locale.h>
 #include "../monitor/sdb/sdb.h"
+#include <memory/vaddr.h>
 
 /* The assembly code of instructions executed is only output to the screen
  * when the number of instructions executed is less than this value.
@@ -43,11 +44,13 @@ static void trace_and_difftest(Decode *_this, vaddr_t dnpc) {
 
   // printf("mark\n");
   for(int i = 0; i < 32;i++){
+    
     if(watchpoint_diff(i) == true)
     {
       nemu_state.state = NEMU_STOP;
       print_watchpoint(i);
     }
+    wp_init(i);
   }
 }
 
@@ -121,6 +124,11 @@ void cpu_exec(uint64_t n) {
   uint64_t timer_start = get_time();
 
   execute(n);
+
+  //test watchpoint
+  // word_t tmp = vaddr_read(0x80000000,4);
+  // tmp ++;
+  // vaddr_write(0x80000000,4,tmp);
 
   uint64_t timer_end = get_time();
   g_timer += timer_end - timer_start;

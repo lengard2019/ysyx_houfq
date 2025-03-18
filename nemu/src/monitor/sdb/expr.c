@@ -109,18 +109,16 @@ int char2int(char s[]){
     return res;
 }
 
-void int2char(int x, char str[]) {//需要考虑溢出的情况
+void int2char(int x, char str[]) {
     int tmp_index = 0;
     int tmp_x = x;
     int x_size = 0, flag = 1;
 
-    // 处理负数
     if (x < 0) {
         str[tmp_index++] = '-';
         x = -x;
     }
 
-    // 计算 x 的位数
     tmp_x = x;
     while (tmp_x) {
         tmp_x /= 10;
@@ -129,12 +127,11 @@ void int2char(int x, char str[]) {//需要考虑溢出的情况
     }
     flag /= 10;
 
-    // 处理 x = 0 的情况
+
     if (x == 0) {
         str[tmp_index++] = '0';
     }
 
-    // 将 x 的每一位转换为字符
     while (x) {
         int a = x / flag;
         x %= flag;
@@ -142,7 +139,6 @@ void int2char(int x, char str[]) {//需要考虑溢出的情况
         str[tmp_index++] = a + '0';
     }
 
-    // 添加字符串终止符
     str[tmp_index] = '\0';
 }
 
@@ -300,7 +296,7 @@ static void token_special(){
   }
   /*
   * TODO
-  * Jie yin yong
+  * 内存
   * */
   for(int i = 0 ; i < nr_token ; i ++)
   {
@@ -329,7 +325,7 @@ static void token_special(){
   }
 
   /*
-   * Init the tokens NUM
+   * NUM
   */
   for(int i = 0 ; i < nr_token ; i ++)
   {
@@ -344,10 +340,13 @@ static void token_special(){
       {
         for(int j = 0; j < strlen(tokens[i].str); j++)
         {
+          // printf("%s\n",tokens[i].str);
           if(tokens[i].str[j] < '0' || tokens[i].str[j] > '9')
           {
-            printf("the number of position %d is wrong\n", i);
-            assert(0);
+            if(tokens[i].str[j] != '-'){
+              printf("the number of position %d is wrong\n", i);
+              assert(0);
+            }           
           }
         }
       }
@@ -530,7 +529,6 @@ uint32_t eval(int p, int q) {
     }
   }
 }
-
 
 word_t expr(char *e, bool *success) {
   if (!make_token(e)) {
