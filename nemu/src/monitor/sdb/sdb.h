@@ -37,4 +37,6 @@ bool watchpoint_diff(int i);
 
 void print_watchpoint(int i);
 
+void wp_init(int i);
+
 #endif

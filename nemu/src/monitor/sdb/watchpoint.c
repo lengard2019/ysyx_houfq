@@ -93,9 +93,10 @@ void create_watchpoint(char* args){
   int tmp = expr(p -> expr,&success);
   if(success){
     p -> old_val = tmp;
+    p -> new_val = tmp;
   } 
   else{
-    printf("创建watchpoint的时候expr求值出现问题\n");
+    printf("expr wrong\n");
   } 
   printf("Create watchpoint No.%d success.\n", p -> NO);
 }
@@ -120,9 +121,11 @@ bool watchpoint_diff(int i){
   {
     bool success = false;
     int tmp = expr(wp_pool[i].expr,&success);
+    // printf("%x\n",tmp);
     if(success){
       if(tmp != wp_pool[i].old_val)
       {
+        wp_pool[i].new_val = tmp;
         return true;
       }
       else
@@ -144,10 +147,16 @@ bool watchpoint_diff(int i){
 void print_watchpoint(int i){
 
   if(wp_pool[i].flag){
-    printf("Watchpoint.No: %d, expr = \"%s\", old_value = %d, new_value = %d\n",
+    printf("Watchpoint.No: %d, expr = \"%s\", old_value = %x, new_value = %x\n",
           wp_pool[i].NO, wp_pool[i].expr,wp_pool[i].old_val, wp_pool[i].new_val);
   }
   else{
     printf("The watchpoint is not used\n");
+  }
+}
+
+void wp_init(int i){
+  if(wp_pool[i].flag){
+    wp_pool[i].old_val = wp_pool[i].new_val;
   }
 }
