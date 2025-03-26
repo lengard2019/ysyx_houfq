@@ -71,6 +71,8 @@ static int cmd_w(char *args);
 
 static int cmd_d(char *args);
 
+static int cmd_test(char *args);
+
 static struct {
   const char *name;
   const char *description;
@@ -84,7 +86,8 @@ static struct {
   { "x", "Scan ddr", cmd_x },
   { "p", "Mathematical expression evaluation", cmd_p },
   { "w", "Set your watchponits", cmd_w },
-  { "d", "Delete watchponits", cmd_d }
+  { "d", "Delete watchponits", cmd_d },
+  { "test", "test", cmd_test }
 
 
   /* TODO: Add more commands */
@@ -94,6 +97,25 @@ static struct {
 #define NR_CMD ARRLEN(cmd_table)
 
 
+static int cmd_test(char *args){
+  char* n = strtok(args," ");
+  int index = 0;
+  sscanf(n, "%d", &index);
+  char* e = get_expr(index);
+  printf("%s\n",e);
+  bool a = false;
+  bool is_division0 = false;
+  word_t result = expr(e,&a);
+  is_division0 = division();
+    if (is_division0 == true){
+      printf("-1\n");
+    }
+    else{
+      printf("%d\n", result);
+    }
+  return 0;
+}
+
 
 static int cmd_si(char *args){
   int step = 0;
@@ -101,6 +123,7 @@ static int cmd_si(char *args){
     step = 1;
   else
     sscanf(args,"%d",&step);// 读入 Step
+  // printf("%08x\n",cpu_state());
   cpu_exec(step);
   return 0;
 }
@@ -113,19 +136,25 @@ static int cmd_p(char *args){
         return 0;
     }
 
-    bool a = false;
-    word_t result = expr(args,&a);
-    // printf("mark\n");
-    printf("%d\n", result);
-    
-    // for test
-    // for(int i = 0; i < 100; i++){
-    //   char *e = gen_expr();
-    //   bool *a = false;
-    //   word_t result = expr(e,a);
-    //   printf("%d\n", result);
-    // }
+    char* arr = strtok(args," ");
+    char* mode = strtok(NULL," ");
+    char* h = "h";
 
+    bool is_division0 = false;
+    bool a = false;
+    word_t result = expr(arr,&a);
+    is_division0 = division();
+    if (is_division0 == true){
+      printf("-1\n");
+    }
+    else{
+      if(mode == NULL){
+        printf("%d\n", result);
+      }
+      else if(strcmp(mode,h) == 0){
+        printf("%x\n", result);
+      }
+    }
     return 0;
 }
 
@@ -138,7 +167,7 @@ static int cmd_x(char *args){
     sscanf(baseaddr,"%x", &addr);
     for(int i = 0 ; i < len ; i ++)
     {
-      printf("%x\n", vaddr_read(addr,4));//addr len
+      printf("%08x\n", vaddr_read(addr,4));//addr len
       addr = addr + 4;
     }
     return 0;

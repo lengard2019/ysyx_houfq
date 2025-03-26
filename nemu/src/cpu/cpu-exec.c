@@ -42,7 +42,6 @@ static void trace_and_difftest(Decode *_this, vaddr_t dnpc) {
   if (g_print_step) { IFDEF(CONFIG_ITRACE, puts(_this->logbuf)); }
   IFDEF(CONFIG_DIFFTEST, difftest_step(_this->pc, dnpc));
 
-  // printf("mark\n");
   for(int i = 0; i < 32;i++){
     
     if(watchpoint_diff(i) == true)
@@ -55,10 +54,10 @@ static void trace_and_difftest(Decode *_this, vaddr_t dnpc) {
 }
 
 static void exec_once(Decode *s, vaddr_t pc) {
-  s->pc = pc;//pc=uint_64
-  s->snpc = pc;
+  s->pc = pc; //pc=uint_64
+  s->snpc = pc; //static
   isa_exec_once(s);
-  cpu.pc = s->dnpc;
+  cpu.pc = s->dnpc;//dynamic
 #ifdef CONFIG_ITRACE
   char *p = s->logbuf;
   p += snprintf(p, sizeof(s->logbuf), FMT_WORD ":", s->pc);
@@ -111,6 +110,11 @@ void assert_fail_msg() {
   statistic();
 }
 
+vaddr_t cpu_state(){
+
+  return cpu.pc;
+}
+
 /* Simulate how the CPU works. */
 void cpu_exec(uint64_t n) {
   g_print_step = (n < MAX_INST_TO_PRINT);//MAX_INST_TO_PRINT = 10;
@@ -126,9 +130,9 @@ void cpu_exec(uint64_t n) {
   execute(n);
 
   //test watchpoint
-  // word_t tmp = vaddr_read(0x80000000,4);
-  // tmp ++;
-  // vaddr_write(0x80000000,4,tmp);
+  word_t tmp = vaddr_read(0x80000000,4);
+  tmp ++;
+  vaddr_write(0x80000000,4,tmp);
 
   uint64_t timer_end = get_time();
   g_timer += timer_end - timer_start;

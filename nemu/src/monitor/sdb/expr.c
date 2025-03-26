@@ -20,6 +20,7 @@
  */
 #include <regex.h>
 #include <memory/paddr.h>
+#include <cpu/cpu.h>
 
 enum {
   TK_NOTYPE = 256, 
@@ -37,6 +38,8 @@ enum {
   REG       = 11,
   OR        = 12,
   AND       = 13,
+  PC        = 14,
+  HEX       = 15,
 
   /* TODO: Add more token types */
 
@@ -66,6 +69,7 @@ static struct rule {
   {"\\$\\$0|\\$ra|\\$sp|\\$gp|\\$tp|\\$t[0-6]|\\$s[0-9]|\\$s1[0-1]|\\$a[0-7]", REG},
   {"\\|\\|", OR},
   {"\\&\\&", AND},
+  {"\\p\\c",PC},
 };
 
 #define NR_REGEX ARRLEN(rules)
@@ -257,6 +261,12 @@ static bool make_token(char *e) {
               strcpy(tokens[nr_token].str, "&&");
               nr_token ++;
               break;
+          
+          case(PC):
+              tokens[nr_token].type = PC;
+              strcpy(tokens[nr_token].str, "PC");
+              nr_token ++;
+              break;
 
           default: 
               printf("no match\n");
@@ -296,11 +306,25 @@ static void token_special(){
   }
   /*
   * TODO
+  * PC
+  * */
+  for(int i = 0; i < nr_token; i ++)
+  {
+	  if(tokens[i].type == PC)
+	  {
+
+      vaddr_t pc = cpu_state();
+      snprintf(tokens[i].str, 11, "0x%08X", pc);
+      tokens[i].type = HEX;
+    }
+  }
+  /*
+  * TODO
   * 内存
   * */
   for(int i = 0 ; i < nr_token ; i ++)
   {
-    if((tokens[i].type == MULTI && i > 0 && tokens[i-1].type != NUM && tokens[i-1].type != REG && tokens[i+1].type == NUM)
+    if((tokens[i].type == MULTI && i > 0 && tokens[i-1].type != NUM && tokens[i-1].type != RIGHT && tokens[i-1].type != REG && tokens[i+1].type == NUM)
 	    ||(tokens[i].type == MULTI && i == 0))
 	  {
       tokens[i].type = TK_NOTYPE;
@@ -309,19 +333,17 @@ static void token_special(){
       sscanf(tokens[i+1].str,"%x", &addr);
       // printf("%d\n",addr);
       word_t value = paddr_read(addr,4);
-      // printf("%d\n",value);
-      int2char((int)value, tokens[i+1].str);
+      snprintf(tokens[i+1].str, 11, "0x%08X", value);
       // printf("mark\n");
       // printf("%s\n",tokens[i+1].str);
-      for(int j = 0 ; j < nr_token ; j ++){
-        if(tokens[j].type == TK_NOTYPE){
-          for(int k = j +1 ; k < nr_token ; k ++){
-            tokens[k - 1] = tokens[k];
-          }
-          nr_token -- ;
-        }
-      }    	    
-    }
+      // for(int j = 0 ; j < nr_token ; j ++){
+      //   if(tokens[j].type == TK_NOTYPE){
+      for(int k = i + 1 ; k < nr_token ; k ++){
+        tokens[k - 1] = tokens[k];
+      }
+      nr_token -- ;
+      tokens[i].type = HEX;
+    }    	    
   }
 
   /*
@@ -333,23 +355,9 @@ static void token_special(){
     {
       if(tokens[i].str[0] == '0' && (tokens[i].str[1] == 'x'|| tokens[i].str[1] == 'X'))// Hex num
       {
-        int value = strtol(tokens[i].str, NULL, 16);
-        int2char(value, tokens[i].str);
+        tokens[i].type = HEX;
       }
-      else
-      {
-        for(int j = 0; j < strlen(tokens[i].str); j++)
-        {
-          // printf("%s\n",tokens[i].str);
-          if(tokens[i].str[j] < '0' || tokens[i].str[j] > '9')
-          {
-            if(tokens[i].str[j] != '-'){
-              printf("the number of position %d is wrong\n", i);
-              assert(0);
-            }           
-          }
-        }
-      }
+      // else
     }
   }
 
@@ -359,7 +367,7 @@ static void token_special(){
 
   for(int i = 0 ; i < nr_token ; i ++)
   {
-	  if((tokens[i].type == MINUS && i > 0 && tokens[i-1].type != NUM && tokens[i+1].type == NUM)
+	  if((tokens[i].type == MINUS && i > 0 && tokens[i-1].type != NUM && tokens[i-1].type != RIGHT && tokens[i+1].type == NUM)
       ||(tokens[i].type == MINUS && i == 0))
 	  {
 	    //printf("%s\n", tokens[i+1].str);
@@ -384,34 +392,62 @@ static void token_special(){
   }
 }
 
-static bool check_parentheses(int p, int q)//判断总式或子式是否符合要求
-{
-  if(tokens[p].type != LEFT  || tokens[q].type != RIGHT)
-    return false;
-  int l = p , r = q;
-  while(l < r)
-  {
-    if(tokens[l].type == LEFT){
-      if(tokens[r].type == RIGHT)
-        {
-          l ++ , r --;
-          continue;
-        }
+// static bool check_parentheses(int p, int q)
+// {
+//   if(tokens[p].type != LEFT  || tokens[q].type != RIGHT)
+//     return false;
+//   int l = p , r = q;
+//   while(l < r)
+//   {
+//     if(tokens[l].type == LEFT){
+//       if(tokens[r].type == RIGHT)
+//         {
+//           l ++ , r --;
+//           continue;
+//         }
 
-      else
-        r --;
-    }
-    else if(tokens[l].type == RIGHT)
-      return false;
-    else l ++;
+//       else
+//         r --;
+//     }
+//     else if(tokens[l].type == RIGHT)
+//       return false;
+//     else l ++;
+//   }
+//   return true;
+// }
+static bool check_parentheses(int p, int q)// 0,12
+{
+  if(tokens[p].type != LEFT  || tokens[q].type != RIGHT){
+    return false;
   }
-  return true;
+  int match = 0;
+  for (int i = p + 1; i < q; i++){
+    if(tokens[i].type == LEFT){
+      match++;
+    }
+    else if(tokens[i].type == RIGHT){
+      match = match - 1;
+    }
+    if(match < 0){
+      return false;
+    }
+  }
+  if(match == 0){
+    return true;
+  } 
+  else{
+    return false;
+  }
 }
+
+
+static bool is_division0 = false;
 
 uint32_t eval(int p, int q) {
   if (p > q) {
     /* Bad expression */
     // printf("%d %d %d\n", nr_token, p, q);
+    printf("Bad expression\n");
     assert(0);
     return -1;
   }
@@ -420,12 +456,19 @@ uint32_t eval(int p, int q) {
      * For now this token should be a number.
      * Return the value of the number.
      */
-    return atoi(tokens[p].str);
+    if(tokens[p].type == HEX){
+      int tmp = strtol(tokens[p].str, NULL, 16);
+      return (uint32_t)tmp;
+    }
+    else {
+      return atoi(tokens[p].str);
+    }
   }
   else if (check_parentheses(p, q) == true) {
     /* The expression is surrounded by a matched pair of parentheses.
      * If that is the case, just throw away the parentheses.
      */
+    // printf("%d %d\n", p, q);
     return eval(p + 1, q - 1);
   }
   else {
@@ -439,13 +482,7 @@ uint32_t eval(int p, int q) {
           while(tokens[i].type != RIGHT){
             i ++;//若没有找到，将返回到Bad expression
           }
-          i++; 
-        }
-      if(tokens[i].type == RIGHT)//跳过括号后不应该先出现右括号
-        {
-          printf("wrong parentheses used\n");
-          assert(0);
-          return -1;
+          // i++; 
         }
       if(!flag && tokens[i].type == LEQ)
         {
@@ -493,9 +530,11 @@ uint32_t eval(int p, int q) {
         op = (op > i) ? op : i;
       }
     }
+    // printf("500 %d\n",q);
     int op_type =  tokens[op].type;
-
+    // printf("501 %d %d\n",p, op - 1);
     uint32_t val1 = eval(p, op - 1);
+    // printf("503 %d %d\n",op + 1, q);
     uint32_t val2 = eval(op + 1, q);
 
     switch (op_type) {
@@ -508,10 +547,12 @@ uint32_t eval(int p, int q) {
       case DIV: 
         if (val2 == 0){
           printf("division can't be 0\n");
+          is_division0 = true;
           return -1;
         }
         else{
-          return val1 / val2;
+          // printf("%d\n",(0 - val1));
+          return (int32_t)val1 / (int32_t)val2;
         }
       case TK_EQ:
         return val1 == val2;
@@ -535,16 +576,17 @@ word_t expr(char *e, bool *success) {
     *success = false;
     return 0;
   }
+  is_division0 = false;
 
   token_special();//特殊情况
   word_t result = 0;
-  // printf("%d\n", NR_REGEX);
-  // for (int i = 0; i < nr_token; i++){
-  //   printf("%d %s\n",tokens[i].type, tokens[i].str);
-  // }
+  printf("%d\n", nr_token);
+  for (int i = 0; i < nr_token; i++){
+    printf("%d %s\n",tokens[i].type, tokens[i].str);
+  }
 
-  if(tokens[0].type != LEFT  || tokens[nr_token-1].type != RIGHT){
-    printf("please add a pair of parentheses\n");
+  if(check_parentheses(0, nr_token - 1) == false){
+    printf("wrong parentheses used\n");
     return -1;
   }
 
@@ -559,78 +601,46 @@ word_t expr(char *e, bool *success) {
   
 }
 
+bool division(){
+
+  return is_division0;
+}
 
 //for test
-static int index_buf __attribute__((used))  = 0;
-static char buf[32] __attribute__((used));
+static char* test_cases[] = {
+  "(3 + 5 * 2)",//0
+  "((3 + 5) * 2)",//1
+  "(27 / (2 + 7))",//2
+  "(10 / (2 + 3))",//3
+  "(100 + 50 / 5 + 10)",//4
+  "(((2 + 3) * 4) - 6)",//5
+  "(10 / 0)",//6
+  "(5 + 3 / (2 - 2))",//7
+  "((3 + 5 * 2)",//8
+  "(3 + 5) * 2)",//9
+  "((3 + 5) * 2 + 8)",//10
+  "((3 + 5)) * 2)",//11
+  "((3 + 5 ) / 2)",//12
+  "(3 + 5 * 2 +)",//13
+  "(3 + 5 * 2 -)",//14
+  "(2 * -1)",//15
+  "((-1 + -3) / 2)",//16
+  "(2 - 1)", //17
+  "(4 + 3 * (2 - 1))",//18
+  "4 + 3 * (2 - 1)",//19
+  "((4 + 3) * (2 + 1))",//20
+  "(4 + 3)) * ((2 - 1)",//21
+  "(4 + 3) * (2 - 1)",//22
+  "((3 + 5) * (2 - 1) / 2)",//23
+  "(((3 + 5) * 2) - (6 / 3))",//24
+  "((1 + 2) * (5 + 4) / (5 - 2))",//25
+  "((1 + 2) * 3 + (4 - 6) / 2)",//26
+  "((1 + 6) * (3 + 3) * 5)",//27
+};
 
-int choose(int n){
-    int flag = rand() % 3 ; // 0 1 2
-	  printf("index = %d, flag = %d. \n",index_buf, flag);
-    return flag;
-}
 
-void gen_num(){
-    int num = rand()% 100;
-    int num_size = 0, num_tmp = num;
-    while(num_tmp){
-	    num_tmp /= 10;
-	    num_size ++;
-    }
-    int x = 1;
-    while(num_size)
-    {
-	    x *= 10;
-	    num_size -- ;
-    }
-    x /= 10;
-    while(num)
-    {
-	    char c = num / x + '0';
-	    num %= x;
-	    x /= 10;
-	    buf[index_buf ++] = c;
-    }
-}
-
-void gen(char c){
-    buf[index_buf ++] = c;
-}
-
-void gen_rand_op(){
-    char op[4] = {'+', '-', '*', '/'};
-    int op_position = rand() % 4;
-    buf[index_buf ++] = op[op_position];
-}
-
-static void gen_rand_expr() {
-    index_buf = 0;
-    memset(buf, 0, sizeof(buf));
-    //    buf[0] = '\0';
-    printf("%d\n",index_buf);	
-    if(index_buf > 32)
-       	printf("overSize\n");
-    switch (choose(3)) {
-	    case 0:
-	      gen_num();
-	      break;
-	    case 1:
-	      gen('(');
-	      gen_rand_expr();
-	      gen(')');
-	      break;
-	    default:
-	      gen_rand_expr();
-	      gen_rand_op();
-	      gen_rand_expr();
-	      break;
-    }
-}
-
-char* gen_expr(){
-  gen_rand_expr();
-  buf[index_buf+1] = '\0';
-  char *e = buf;
-  // printf("%s\n",buf);
-  return e; 
+char* get_expr(int i)
+{
+  char *e = test_cases[i];
+  return e;
 }

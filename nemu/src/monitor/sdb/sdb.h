@@ -20,7 +20,9 @@
 
 word_t expr(char *e, bool *success);
 
-char* gen_expr();
+bool division();
+
+char* get_expr(int i);
 
 typedef struct token {
   int type;
