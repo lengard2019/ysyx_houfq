@@ -86,7 +86,7 @@ static void exec_once(Decode *s, vaddr_t pc) {
 
 static void execute(uint64_t n) {
   Decode s;
-  for (;n > 0; n --) {//unint64，若-1则传入最大的64位数
+  for (;n > 0; n --) {// unint64，若-1则传入最大的64位数
     // printf("mark\n");
     exec_once(&s, cpu.pc);
     g_nr_guest_inst ++;
@@ -130,9 +130,9 @@ void cpu_exec(uint64_t n) {
   execute(n);
 
   //test watchpoint
-  word_t tmp = vaddr_read(0x80000000,4);
-  tmp ++;
-  vaddr_write(0x80000000,4,tmp);
+  // word_t tmp = vaddr_read(0x80000000,4);
+  // tmp ++;
+  // vaddr_write(0x80000000,4,tmp);
 
   uint64_t timer_end = get_time();
   g_timer += timer_end - timer_start;
