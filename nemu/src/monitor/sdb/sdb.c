@@ -76,7 +76,7 @@ static int cmd_test(char *args);
 static struct {
   const char *name;
   const char *description;
-  int (*handler) (char *);//函数指针
+  int (*handler) (char *);
 } cmd_table [] = {
   { "help", "Display information about all supported commands", cmd_help },
   { "c", "Continue the execution of the program", cmd_c },
@@ -89,19 +89,24 @@ static struct {
   { "d", "Delete watchponits", cmd_d },
   { "test", "test", cmd_test }
 
+
+  /* TODO: Add more commands */
+
 };
 
 #define NR_CMD ARRLEN(cmd_table)
 
 
 static int cmd_test(char *args){
-  char* e = get_expr();
+  char* n = strtok(args," ");
+  int index = 0;
+  sscanf(n, "%d", &index);
+  char* e = get_expr(index);
   printf("%s\n",e);
   bool a = false;
   bool is_division0 = false;
   word_t result = expr(e,&a);
   is_division0 = division();
-  clean();
     if (is_division0 == true){
       printf("-1\n");
     }

@@ -22,8 +22,6 @@
 #include <memory/paddr.h>
 #include <cpu/cpu.h>
 
-#define MAX_TOKENS 32 
-
 enum {
   TK_NOTYPE = 256, 
   PLUS      = 0,
@@ -320,9 +318,10 @@ static void token_special(){
       tokens[i].type = HEX;
     }
   }
-  
-  //内存
- 
+  /*
+  * TODO
+  * 内存
+  * */
   for(int i = 0 ; i < nr_token ; i ++)
   {
     if((tokens[i].type == MULTI && i > 0 && tokens[i-1].type != NUM && tokens[i-1].type != RIGHT && tokens[i-1].type != REG && tokens[i+1].type == NUM)
@@ -393,6 +392,29 @@ static void token_special(){
   }
 }
 
+// static bool check_parentheses(int p, int q)
+// {
+//   if(tokens[p].type != LEFT  || tokens[q].type != RIGHT)
+//     return false;
+//   int l = p , r = q;
+//   while(l < r)
+//   {
+//     if(tokens[l].type == LEFT){
+//       if(tokens[r].type == RIGHT)
+//         {
+//           l ++ , r --;
+//           continue;
+//         }
+
+//       else
+//         r --;
+//     }
+//     else if(tokens[l].type == RIGHT)
+//       return false;
+//     else l ++;
+//   }
+//   return true;
+// }
 static bool check_parentheses(int p, int q)// 0,12
 {
   if(tokens[p].type != LEFT  || tokens[q].type != RIGHT){
@@ -452,25 +474,14 @@ uint32_t eval(int p, int q) {
   else {
     int op = -1;//the position of 主运算符 in the token expression;
     bool flag = false;//判断是否是加减号
-    // int index;//特殊情况
 
     //搜索主运算符的位置
     for(int i = p; i < q; i++){
       if(tokens[i].type == LEFT)//括号内最后算
         {
-          int a = i;
-
-          while(check_parentheses(a,i) != true){
-            i++;
+          while(tokens[i].type != RIGHT){
+            i ++;//若没有找到，将返回到Bad expression
           }
-
-          // for (int j = a; j < q; j++){
-          //   if(check_parentheses(a,j) == true){
-          //     i = j;
-          //     printf("466 %d\n",j);
-          //     break;
-          //   }
-          // }
           // i++; 
         }
       if(!flag && tokens[i].type == LEQ)
@@ -509,7 +520,7 @@ uint32_t eval(int p, int q) {
           op = (op > i) ? op : i;
         }
 
-      if(((tokens[i].type == PLUS) || (tokens[i].type == MINUS))){
+      if(!flag && ((tokens[i].type == PLUS) || (tokens[i].type == MINUS))){
         flag = true;
         // op = i;
         op = (op > i) ? op : i;
@@ -519,11 +530,11 @@ uint32_t eval(int p, int q) {
         op = (op > i) ? op : i;
       }
     }
-    // printf("511 %d\n",q);
+    // printf("500 %d\n",q);
     int op_type =  tokens[op].type;
-    printf("513 %d %d\n",p, op - 1);
+    // printf("501 %d %d\n",p, op - 1);
     uint32_t val1 = eval(p, op - 1);
-    printf("515 %d %d\n",op + 1, q);
+    // printf("503 %d %d\n",op + 1, q);
     uint32_t val2 = eval(op + 1, q);
 
     switch (op_type) {
@@ -569,10 +580,10 @@ word_t expr(char *e, bool *success) {
 
   token_special();//特殊情况
   word_t result = 0;
-  printf("%d\n", nr_token);
-  for (int i = 0; i < nr_token; i++){
-    printf("%d %s\n",tokens[i].type, tokens[i].str);
-  }
+  // printf("%d\n", nr_token);
+  // for (int i = 0; i < nr_token; i++){
+  //   printf("%d %s\n",tokens[i].type, tokens[i].str);
+  // }
 
   if(check_parentheses(0, nr_token - 1) == false){
     printf("wrong parentheses used\n");
@@ -591,160 +602,45 @@ word_t expr(char *e, bool *success) {
 }
 
 bool division(){
+
   return is_division0;
 }
 
-// (2*(4-6+9+8*(7+4)*(4-2)))
-
 //for test
-// static char* test_cases[] = {
-//   "(3 + 5 * 2)",                    //0
-//   "((3 + 5) * 2)",                  //1
-//   "(27 / (2 + 7))",                 //2
-//   "(10 / (2 + 3))",                 //3
-//   "(100 + 50 / 5 + 10)",            //4
-//   "(((2 + 3) * 4) - 6)",            //5
-//   "(10 / 0)",                       //6
-//   "(5 + 3 / (2 - 2))",              //7
-//   "((3 + 5 * 2)",                   //8
-//   "(3 + 5) * 2)",                   //9
-//   "((3 + 5) * 2 + 8)",              //10
-//   "((3 + 5)) * 2)",                 //11
-//   "((3 + 5 ) / 2)",                 //12
-//   "(3 + 5 * 2 +)",                  //13
-//   "(3 + 5 * 2 -)",                  //14
-//   "(2 * -1)",                       //15
-//   "((-1 + -3) / 2)",                //16
-//   "(2 - 1)",                        //17
-//   "(4 + 3 * (2 - 1))",              //18
-//   "4 + 3 * (2 - 1)",                //19
-//   "((4 + 3) * (2 + 1))",            //20
-//   "(4 + 3)) * ((2 - 1)",            //21
-//   "(4 + 3) * (2 - 1)",              //22
-//   "((3 + 5) * (2 - 1) / 2)",        //23
-//   "(((3 + 5) * 2) - (6 / 3))",      //24
-//   "((1 + 2) * (5 + 4) / (5 - 2))",  //25
-//   "((1 + 2) * 3 + (4 - 6) / 2)",    //26
-//   "((1 + 6) * (3 + 3) * 5)",        //27
-//   "(2*(4-6+9+8*(4+7)*(4-2)))"       //28
-// };
+static char* test_cases[] = {
+  "(3 + 5 * 2)",                    //0
+  "((3 + 5) * 2)",                  //1
+  "(27 / (2 + 7))",                 //2
+  "(10 / (2 + 3))",                 //3
+  "(100 + 50 / 5 + 10)",            //4
+  "(((2 + 3) * 4) - 6)",            //5
+  "(10 / 0)",                       //6
+  "(5 + 3 / (2 - 2))",              //7
+  "((3 + 5 * 2)",                   //8
+  "(3 + 5) * 2)",                   //9
+  "((3 + 5) * 2 + 8)",              //10
+  "((3 + 5)) * 2)",                 //11
+  "((3 + 5 ) / 2)",                 //12
+  "(3 + 5 * 2 +)",                  //13
+  "(3 + 5 * 2 -)",                  //14
+  "(2 * -1)",                       //15
+  "((-1 + -3) / 2)",                //16
+  "(2 - 1)",                        //17
+  "(4 + 3 * (2 - 1))",              //18
+  "4 + 3 * (2 - 1)",                //19
+  "((4 + 3) * (2 + 1))",            //20
+  "(4 + 3)) * ((2 - 1)",            //21
+  "(4 + 3) * (2 - 1)",              //22
+  "((3 + 5) * (2 - 1) / 2)",        //23
+  "(((3 + 5) * 2) - (6 / 3))",      //24
+  "((1 + 2) * (5 + 4) / (5 - 2))",  //25
+  "((1 + 2) * 3 + (4 - 6) / 2)",    //26
+  "((1 + 6) * (3 + 3) * 5)",        //27
+};
 
-static int index_buf = 0;
-static char buf[100] __attribute__((used)) = {};
-static int token_count = 0;
 
-int choose(int n)
+char* get_expr(int i)
 {
-	return rand() % n;
-}
-
-static void gen(char c)
-{
-  if(token_count >= MAX_TOKENS - 1){
-    return;
-  }
-	buf[index_buf] = c;
-  index_buf++;
-  token_count ++;
-}
-
-static void gen_num()
-{
-  if(token_count >= MAX_TOKENS - 1){
-    return;
-  }
-	int num = rand() % 100;
-	int len = 0, tmp = num;
-	while(tmp)
-	{
-		tmp /= 10;
-		len++;
-	}
-
-	int x;
-
-	if(len <= 1){
-    x = 1;
-  } 
-	else{
-    x = (len - 1) * 10;
-  }
-   
-	while(num)
-	{
-		char c = num / x + '0';
-		buf[index_buf] = c;
-    index_buf++;
-		num %= x;
-		x /= 10;
-	}
-  token_count ++;
-}
-
-static void gen_rand_op()
-{
-  if(token_count >= MAX_TOKENS - 1){
-    return;
-  }
-	char op[3] = {'+', '-', '*'};
-	int pos = rand() % 3;
-	buf[index_buf++] = op[pos];
-  token_count ++;
-}
-
-void gen_rand_expr() {
-  if(token_count >= MAX_TOKENS - 1){
-    return;
-  }
-  int a = choose(5);
-  if(a == 0 || a == 1){
-    gen_num();
-    return; 
-  }
-  else if(a == 2){
-    gen('(');
-    gen_rand_expr(); 
-    gen(')');
-    return;
-  }
-  else{
-    gen_rand_expr(); 
-    gen_rand_op();
-    gen_rand_expr();
-    return; 
-  }
-  // switch (choose(3)) {
-  //   case 0: 
-  //     gen_num(); 
-  //     break;
-  //   case 1: 
-  //     gen('(');
-  //     gen_rand_expr(); 
-  //     gen(')'); 
-  //     break;
-  //   default: 
-  //     gen_rand_expr(); 
-  //     gen_rand_op();
-  //     gen_rand_expr(); 
-  //     break;
-  // }
-}
-
-char* get_expr()
-{ 
-  buf[index_buf] = '(';
-  index_buf ++;
-  token_count ++;
-  gen_rand_expr();
-  buf[index_buf ++] = ')';
-  buf[index_buf ++] = '\0';
-  return buf;
-}
-
-void clean(){
-  for(int i = 0; i < index_buf; i++){
-    buf[i] = '\0'; 
-  }
-  index_buf = 0;
-  token_count = 0;
+  char *e = test_cases[i];
+  return e;
 }
