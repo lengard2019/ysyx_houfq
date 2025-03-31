@@ -48,9 +48,9 @@ $(OBJ_DIR)/%.o: %.cc
 $(OBJ_DIR_GDB)/%.o: %.c
 	@echo + CC $<
 	@mkdir -p $(dir $@)
-	@$(CC) $(CFLAGS) -c -o $@ $<
+	@$(CC) -g $(CFLAGS) -c -o $@ $<
 	$(call call_fixdep, $(@:.o=.d), $@)
-	
+
 # Depencies
 -include $(OBJS:.o=.d)
 
