@@ -463,15 +463,6 @@ uint32_t eval(int p, int q) {
           while(check_parentheses(a,i) != true){
             i++;
           }
-
-          // for (int j = a; j < q; j++){
-          //   if(check_parentheses(a,j) == true){
-          //     i = j;
-          //     printf("466 %d\n",j);
-          //     break;
-          //   }
-          // }
-          // i++; 
         }
       if(!flag && tokens[i].type == LEQ)
         {
@@ -521,9 +512,9 @@ uint32_t eval(int p, int q) {
     }
     // printf("511 %d\n",q);
     int op_type =  tokens[op].type;
-    printf("513 %d %d\n",p, op - 1);
+    // printf("513 %d %d\n",p, op - 1);
     uint32_t val1 = eval(p, op - 1);
-    printf("515 %d %d\n",op + 1, q);
+    // printf("515 %d %d\n",op + 1, q);
     uint32_t val2 = eval(op + 1, q);
 
     switch (op_type) {
@@ -569,10 +560,10 @@ word_t expr(char *e, bool *success) {
 
   token_special();//特殊情况
   word_t result = 0;
-  printf("%d\n", nr_token);
-  for (int i = 0; i < nr_token; i++){
-    printf("%d %s\n",tokens[i].type, tokens[i].str);
-  }
+  // printf("%d\n", nr_token);
+  // for (int i = 0; i < nr_token; i++){
+  //   printf("%d %s\n",tokens[i].type, tokens[i].str);
+  // }
 
   if(check_parentheses(0, nr_token - 1) == false){
     printf("wrong parentheses used\n");
