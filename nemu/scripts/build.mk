@@ -9,10 +9,14 @@ endif
 
 WORK_DIR  = $(shell pwd)
 BUILD_DIR = $(WORK_DIR)/build
+BUILD_DIR_GDB = $(WORK_DIR)/build_gdb
 
 INC_PATH := $(WORK_DIR)/include $(INC_PATH)
 OBJ_DIR  = $(BUILD_DIR)/obj-$(NAME)$(SO)
 BINARY   = $(BUILD_DIR)/$(NAME)$(SO)
+
+OBJ_DIR_GDB  = $(BUILD_DIR_GDB)/obj-$(NAME)$(SO)
+BINARY_GDB   = $(BUILD_DIR_GDB)/$(NAME)$(SO)
 
 # Compilation flags
 ifeq ($(CC),clang)
@@ -38,6 +42,12 @@ $(OBJ_DIR)/%.o: %.cc
 	@echo + CXX $<
 	@mkdir -p $(dir $@)
 	@$(CXX) $(CFLAGS) $(CXXFLAGS) -c -o $@ $<
+	$(call call_fixdep, $(@:.o=.d), $@)
+
+$(OBJ_DIR_GDB)/%.o: %.c
+	@echo + CC $<
+	@mkdir -p $(dir $@)
+	@$(CC) -g $(CFLAGS) -c -o $@ $<
 	$(call call_fixdep, $(@:.o=.d), $@)
 
 # Depencies
