@@ -21,7 +21,7 @@ include $(NEMU_HOME)/tools/difftest.mk
 compile_git:
 	$(call git_commit, "compile NEMU")
 $(BINARY):: compile_git
-$(BINARY_GDB):: compile_git
+
 # Some convenient rules
 
 override ARGS ?= --log=$(BUILD_DIR)/nemu-log.txt
@@ -30,7 +30,7 @@ override ARGS += $(ARGS_DIFF)
 # Command to execute NEMU
 IMG ?=
 NEMU_EXEC := $(BINARY) $(ARGS) $(IMG)
-NEMU_EXEC_GDB := $(BINARY) $(ARGS) $(IMG)
+NEMU_EXEC_GDB := $(BINARY_GDB) $(ARGS) $(IMG)
 
 run-env: $(BINARY) $(DIFF_REF_SO)
 
