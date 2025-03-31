@@ -3,7 +3,7 @@ STUNAME = 张三
 
 # DO NOT modify the following code!!!
 
-TRACER = tracer-ysyx
+TRACER = pa1
 GITFLAGS = -q --author='$(TRACER) <tracer@ysyx.org>' --no-verify --allow-empty
 
 YSYX_HOME = $(NEMU_HOME)/..
