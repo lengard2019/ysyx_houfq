@@ -32,6 +32,8 @@ LDFLAGS := -O2 $(LDFLAGS)
 
 OBJS = $(SRCS:%.c=$(OBJ_DIR)/%.o) $(CXXSRC:%.cc=$(OBJ_DIR)/%.o)
 
+OBJS_GDB = $(SRCS:%.c=$(OBJ_DIR_GDB)/%.o) $(CXXSRC:%.cc=$(OBJ_DIR_GDB)/%.o)
+
 # Compilation patterns
 $(OBJ_DIR)/%.o: %.c
 	@echo + CC $<
@@ -63,6 +65,11 @@ app: $(BINARY)
 $(BINARY):: $(OBJS) $(ARCHIVES)
 	@echo + LD $@
 	@$(LD) -o $@ $(OBJS) $(LDFLAGS) $(ARCHIVES) $(LIBS)
+
+$(BINARY_GDB):: $(OBJS_GDB) $(ARCHIVES)
+	@echo + LD $@
+	@$(LD) -o $@ $(OBJS_GDB) $(LDFLAGS) $(ARCHIVES) $(LIBS)
+
 
 clean:
 	-rm -rf $(BUILD_DIR)
