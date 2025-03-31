@@ -31,11 +31,10 @@ override ARGS += $(ARGS_DIFF)
 # Command to execute NEMU
 IMG ?=
 NEMU_EXEC := $(BINARY) $(ARGS) $(IMG)
-NEMU_EXEC_GDB := $(BINARY) $(ARGS) $(IMG)
+NEMU_EXEC_GDB := $(BINARY_GDB) $(ARGS) $(IMG)
 
 run-env: $(BINARY) $(DIFF_REF_SO)
 run-envgdb: $(BINARY_GDB) $(DIFF_REF_SO)
-
 
 run: run-env
 	$(call git_commit, "run NEMU")
@@ -43,7 +42,7 @@ run: run-env
 
 gdb: run-envgdb
 	$(call git_commit, "gdb NEMU")
-	gdb -s $(BINARY_GDB) --args $(NEMU_EXEC)
+	gdb -s $(BINARY_GDB) --args $(NEMU_EXEC_GDB)
 
 clean-tools = $(dir $(shell find ./tools -maxdepth 2 -mindepth 2 -name "Makefile"))
 $(clean-tools):
