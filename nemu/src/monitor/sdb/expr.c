@@ -648,7 +648,7 @@ static void gen_num()
 	int len = 0, tmp = num;
 	while(tmp)
 	{
-		tmp /= 10;
+		tmp = tmp/10;
 		len++;
 	}
 
@@ -658,7 +658,7 @@ static void gen_num()
     x = 1;
   } 
 	else{
-    x = (len - 1) * 10;
+    x = 10;
   }
    
 	while(num)
