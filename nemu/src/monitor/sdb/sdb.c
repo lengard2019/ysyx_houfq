@@ -76,7 +76,7 @@ static int cmd_test(char *args);
 static struct {
   const char *name;
   const char *description;
-  int (*handler) (char *);//函数指针
+  int (*handler) (char *);  //函数指针
 } cmd_table [] = {
   { "help", "Display information about all supported commands", cmd_help },
   { "c", "Continue the execution of the program", cmd_c },
