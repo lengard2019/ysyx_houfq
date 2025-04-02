@@ -668,7 +668,7 @@ static void gen_num()
 
 static void gen_rand_op()
 {
-  if(token_count >= MAX_TOKENS - 3){
+  if(token_count >= MAX_TOKENS - 1){
     return;
   }
 	char op[3] = {'+', '-', '*'};
@@ -721,4 +721,3 @@ void clean(){
   depth = 0;
 }
 
-//(67*(46-88*+26-44+24*91*4*2+91))
