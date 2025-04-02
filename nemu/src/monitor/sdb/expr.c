@@ -667,7 +667,7 @@ static void gen_num()
 
 static void gen_rand_op()
 {
-  if(token_count >= MAX_TOKENS - 1){
+  if(token_count >= MAX_TOKENS - 3){
     return;
   }
 	char op[3] = {'+', '-', '*'};
@@ -677,7 +677,7 @@ static void gen_rand_op()
 }
 
 void gen_rand_expr() {
-  if(token_count >= MAX_TOKENS - 1){
+  if(token_count >= MAX_TOKENS - 3){
     return;
   }
   int a = choose(5);
