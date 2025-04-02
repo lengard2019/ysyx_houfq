@@ -645,6 +645,7 @@ static void gen_num()
     return;
   }
 	int num = rand() % 100;
+  printf("%d\n",num);
   if(num < 10){
     char c = num + '0';
     buf[index_buf] = c;
