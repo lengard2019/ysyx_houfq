@@ -653,8 +653,9 @@ static void gen_num()
   }
   else {
     int tmp1 = num % 10;
+    int a = num/10;
     printf("%d\n",tmp1);
-    int tmp2 = tmp1 % 10;
+    int tmp2 = a % 10;
     printf("%d\n",tmp2);
     char c1 = tmp1 + '0';//gewei
     char c2 = tmp2 + '0';//shiwei
