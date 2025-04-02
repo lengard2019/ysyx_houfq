@@ -87,7 +87,7 @@ static struct {
   { "p", "Mathematical expression evaluation", cmd_p },
   { "w", "Set your watchponits", cmd_w },
   { "d", "Delete watchponits", cmd_d },
-  { "test", "test", cmd_test }
+  { "test", "Test expression", cmd_test }
 
 };
 
@@ -124,7 +124,6 @@ static int cmd_si(char *args){
 }
 
 static int cmd_p(char *args){
-    //printf("%s",args);
 
     if(args == NULL){
         printf("No args\n");
