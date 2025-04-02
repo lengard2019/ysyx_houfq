@@ -652,38 +652,15 @@ static void gen_num()
   }
   else {
     int tmp1 = num % 10;
-    char c = tmp1 + '0';
-    buf[index_buf] = c;
+    int tmp2 = tmp1 % 10;
+    char c1 = tmp1 + '0';//gewei
+    char c2 = tmp2 + '0';//shiwei
+    buf[index_buf] = c2;
     index_buf ++;
-    tmp1 = tmp1 % 10;
-    c = tmp1 + '0';
-    buf[index_buf] = c;
+    buf[index_buf] = c1;
     index_buf ++;
   }
 
-	// while(tmp > 0)
-	// {
-	// 	tmp = tmp/10;
-	// 	len++;
-	// }
-
-	// int x;
-
-	// if(len <= 1){
-  //   x = 1;
-  // } 
-	// else{
-  //   x = 10;
-  // }
-   
-	// while(num)
-	// {
-	// 	char c = num / x + '0';
-	// 	buf[index_buf] = c;
-  //   index_buf++;
-	// 	num %= x;
-	// 	x /= 10;
-	// }
   token_count ++;
 }
 
