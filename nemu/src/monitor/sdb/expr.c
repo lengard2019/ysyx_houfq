@@ -678,7 +678,7 @@ static void gen_rand_op()
 }
 
 void gen_rand_expr() {
-  if(depth > 5){
+  if(depth > 4){
     return;
   }
   int a = choose(5);
