@@ -645,30 +645,45 @@ static void gen_num()
     return;
   }
 	int num = rand() % 100;
-	int len = 0, tmp = num;
-	while(tmp)
-	{
-		tmp = tmp/10;
-		len++;
-	}
-
-	int x;
-
-	if(len <= 1){
-    x = 1;
-  } 
-	else{
-    x = 10;
+  if(num < 10){
+    char c = num + '0';
+    buf[index_buf] = c;
+    index_buf ++;
   }
+  else {
+    int tmp1 = num % 10;
+    char c = tmp1 + '0';
+    buf[index_buf] = c;
+    index_buf ++;
+    tmp1 = tmp1 % 10;
+    c = tmp1 + '0';
+    buf[index_buf] = c;
+    index_buf ++;
+  }
+
+	// while(tmp > 0)
+	// {
+	// 	tmp = tmp/10;
+	// 	len++;
+	// }
+
+	// int x;
+
+	// if(len <= 1){
+  //   x = 1;
+  // } 
+	// else{
+  //   x = 10;
+  // }
    
-	while(num)
-	{
-		char c = num / x + '0';
-		buf[index_buf] = c;
-    index_buf++;
-		num %= x;
-		x /= 10;
-	}
+	// while(num)
+	// {
+	// 	char c = num / x + '0';
+	// 	buf[index_buf] = c;
+  //   index_buf++;
+	// 	num %= x;
+	// 	x /= 10;
+	// }
   token_count ++;
 }
 
