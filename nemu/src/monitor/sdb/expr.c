@@ -623,6 +623,7 @@ bool division(){
 static int index_buf = 0;
 static char buf[100] __attribute__((used)) = {};
 static int token_count = 0;
+static int depth;
 
 int choose(int n)
 {
@@ -677,7 +678,7 @@ static void gen_rand_op()
 }
 
 void gen_rand_expr() {
-  if(token_count >= MAX_TOKENS - 3){
+  if(depth > 5){
     return;
   }
   int a = choose(5);
@@ -697,7 +698,7 @@ void gen_rand_expr() {
     gen_rand_expr();
     return; 
   }
-  
+  depth++;
 }
 
 char* get_expr()
@@ -717,6 +718,7 @@ void clean(){
   }
   index_buf = 0;
   token_count = 0;
+  depth = 0;
 }
 
 //(67*(46-88*+26-44+24*91*4*2+91))
