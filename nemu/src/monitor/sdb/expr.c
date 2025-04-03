@@ -463,7 +463,7 @@ uint32_t eval(int p, int q) {
           while(check_parentheses(a,i) != true){
             i++;
           }
-          i++;
+          // i++;
         }
       if(!flag && tokens[i].type == LEQ)
         {
@@ -561,10 +561,10 @@ word_t expr(char *e, bool *success) {
 
   token_special();//特殊情况
   word_t result = 0;
-  // printf("%d\n", nr_token);
-  // for (int i = 0; i < nr_token; i++){
-  //   printf("%d %s\n",tokens[i].type, tokens[i].str);
-  // }
+  printf("%d\n", nr_token);
+  for (int i = 0; i < nr_token; i++){
+    printf("%d %s\n",tokens[i].type, tokens[i].str);
+  }
 
   if(check_parentheses(0, nr_token - 1) == false){
     printf("wrong parentheses used\n");
