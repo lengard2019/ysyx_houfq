@@ -46,6 +46,9 @@ gdb: run-envgdb
 	$(call git_commit, "gdb NEMU")
 	gdb -s $(BINARY_GDB) --args $(NEMU_EXEC_GDB)
 
+count: 
+	cloc $(NEMU_HOME) --include-lang="C,C/C++ Header"
+
 clean-tools = $(dir $(shell find ./tools -maxdepth 2 -mindepth 2 -name "Makefile"))
 $(clean-tools):
 	-@$(MAKE) -s -C $@ clean

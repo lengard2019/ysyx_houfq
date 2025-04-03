@@ -3,9 +3,8 @@ STUNAME = 张三
 
 # DO NOT modify the following code!!!
 
-TRACER = pa1
-GITFLAGS = -q --author='$(TRACER) <tracer@ysyx.org>' --no-verify --allow-empty #-q 安静模式 --author 设置提交作者信息--no-verify 跳过 Git 钩子--allow-empty 允许空提交
-
+TRACER = tracer-ysyx
+GITFLAGS = -q --author='$(TRACER) <tracer@ysyx.org>' --no-verify --allow-empty
 
 YSYX_HOME = $(NEMU_HOME)/..
 WORK_BRANCH = $(shell git rev-parse --abbrev-ref HEAD)
@@ -14,7 +13,7 @@ TRACER_BRANCH = $(TRACER)
 
 LOCK_DIR = $(YSYX_HOME)/.git/
 
-# prototype: git_soft_checkout(branch) 切换到指定分支
+# prototype: git_soft_checkout(branch)
 define git_soft_checkout
 	git checkout --detach -q && git reset --soft $(1) -q -- && git checkout $(1) -q --
 endef
