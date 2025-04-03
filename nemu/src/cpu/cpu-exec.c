@@ -91,7 +91,7 @@ static void exec_once(Decode *s, vaddr_t pc) {
 static void execute(uint64_t n) {
   Decode s;
   for (;n > 0; n --) {// unint64，若-1则传入最大的64位数
-    // printf("%ld\n",n);
+    // printf("mark\n");
     exec_once(&s, cpu.pc);
     g_nr_guest_inst ++;
     trace_and_difftest(&s, cpu.pc);
