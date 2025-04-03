@@ -154,7 +154,7 @@ static int cmd_p(char *args){
 
 static int cmd_x(char *args){
     char* n = strtok(args," ");
-    char* baseaddr = strtok(NULL," ");
+    char* baseaddr = strtok(NULL," "); //后续的调用需传入NULL，提示从上一次分割结束开始
     int len = 0;
     paddr_t addr = 0;
     sscanf(n, "%d", &len);
