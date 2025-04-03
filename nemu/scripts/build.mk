@@ -30,15 +30,16 @@ INCLUDES = $(addprefix -I, $(INC_PATH))
 CFLAGS  := -O2 -MMD -Wall -Werror $(INCLUDES) $(CFLAGS)
 LDFLAGS := -O2 $(LDFLAGS)
 
-OBJS = $(SRCS:%.c=$(OBJ_DIR)/%.o) $(CXXSRC:%.cc=$(OBJ_DIR)/%.o)
+OBJS = $(SRCS:%.c=$(OBJ_DIR)/%.o) $(CXXSRC:%.cc=$(OBJ_DIR)/%.o) #将 SRCS 中所有 .c 文件替换为 $(OBJ_DIR)/%.o
 
 OBJS_GDB = $(SRCS:%.c=$(OBJ_DIR_GDB)/%.o) $(CXXSRC:%.cc=$(OBJ_DIR_GDB)/%.o)
+
 
 # Compilation patterns
 $(OBJ_DIR)/%.o: %.c
 	@echo + CC $<
-	@mkdir -p $(dir $@)  #/home/user/ics2024/nemu/build/obj-riscv32-nemu-interpreter/src/utils/timer.o
-	@$(CC) $(CFLAGS) -c -o $@ $<
+	@mkdir -p $(dir $@)
+	@$(CC) $(CFLAGS) -c -o $@ $< 
 	$(call call_fixdep, $(@:.o=.d), $@)
 
 $(OBJ_DIR)/%.o: %.cc
