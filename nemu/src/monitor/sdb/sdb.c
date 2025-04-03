@@ -76,7 +76,7 @@ static int cmd_test(char *args);
 static struct {
   const char *name;
   const char *description;
-  int (*handler) (char *);//函数指针
+  int (*handler) (char *);  //函数指针
 } cmd_table [] = {
   { "help", "Display information about all supported commands", cmd_help },
   { "c", "Continue the execution of the program", cmd_c },
@@ -87,7 +87,7 @@ static struct {
   { "p", "Mathematical expression evaluation", cmd_p },
   { "w", "Set your watchponits", cmd_w },
   { "d", "Delete watchponits", cmd_d },
-  { "test", "test", cmd_test }
+  { "test", "Test expression", cmd_test }
 
 };
 
@@ -124,7 +124,6 @@ static int cmd_si(char *args){
 }
 
 static int cmd_p(char *args){
-    //printf("%s",args);
 
     if(args == NULL){
         printf("No args\n");
@@ -155,7 +154,7 @@ static int cmd_p(char *args){
 
 static int cmd_x(char *args){
     char* n = strtok(args," ");
-    char* baseaddr = strtok(NULL," ");
+    char* baseaddr = strtok(NULL," "); //后续的调用需传入NULL，提示从上一次分割结束开始
     int len = 0;
     paddr_t addr = 0;
     sscanf(n, "%d", &len);

@@ -623,6 +623,7 @@ bool division(){
 static int index_buf = 0;
 static char buf[100] __attribute__((used)) = {};
 static int token_count = 0;
+static int depth;
 
 int choose(int n)
 {
@@ -645,30 +646,23 @@ static void gen_num()
     return;
   }
 	int num = rand() % 100;
-	int len = 0, tmp = num;
-	while(tmp)
-	{
-		tmp /= 10;
-		len++;
-	}
-
-	int x;
-
-	if(len <= 1){
-    x = 1;
-  } 
-	else{
-    x = (len - 1) * 10;
+  if(num < 10){
+    char c = num + '0';
+    buf[index_buf] = c;
+    index_buf ++;
   }
-   
-	while(num)
-	{
-		char c = num / x + '0';
-		buf[index_buf] = c;
-    index_buf++;
-		num %= x;
-		x /= 10;
-	}
+  else {
+    int tmp1 = num % 10;
+    int a = num / 10;
+    int tmp2 = a % 10;
+    char c1 = tmp1 + '0';//gewei
+    char c2 = tmp2 + '0';//shiwei
+    buf[index_buf] = c2;
+    index_buf ++;
+    buf[index_buf] = c1;
+    index_buf ++;
+  }
+
   token_count ++;
 }
 
@@ -684,7 +678,7 @@ static void gen_rand_op()
 }
 
 void gen_rand_expr() {
-  if(token_count >= MAX_TOKENS - 1){
+  if(depth > 4){
     return;
   }
   int a = choose(5);
@@ -704,7 +698,7 @@ void gen_rand_expr() {
     gen_rand_expr();
     return; 
   }
-  
+  depth++;
 }
 
 char* get_expr()
@@ -724,4 +718,6 @@ void clean(){
   }
   index_buf = 0;
   token_count = 0;
+  depth = 0;
 }
+
