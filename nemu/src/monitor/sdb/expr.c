@@ -463,7 +463,7 @@ uint32_t eval(int p, int q) {
           while(check_parentheses(a,i) != true){
             i++;
           }
-          // i++;
+          i++;
         }
       if(!flag && tokens[i].type == LEQ)
         {
