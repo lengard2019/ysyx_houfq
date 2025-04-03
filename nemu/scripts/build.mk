@@ -37,7 +37,7 @@ OBJS_GDB = $(SRCS:%.c=$(OBJ_DIR_GDB)/%.o) $(CXXSRC:%.cc=$(OBJ_DIR_GDB)/%.o)
 # Compilation patterns
 $(OBJ_DIR)/%.o: %.c
 	@echo + CC $<
-	@mkdir -p $(dir $@)
+	@mkdir -p $(dir $@)  #/home/user/ics2024/nemu/build/obj-riscv32-nemu-interpreter/src/utils/timer.o
 	@$(CC) $(CFLAGS) -c -o $@ $<
 	$(call call_fixdep, $(@:.o=.d), $@)
 
