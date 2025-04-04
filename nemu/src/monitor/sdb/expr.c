@@ -678,6 +678,8 @@ static void gen_rand_op()
 }
 
 void gen_rand_expr() {
+  depth++;
+  printf("%d\n",depth);
   if(depth > 5){
     return;
   }
@@ -698,8 +700,6 @@ void gen_rand_expr() {
     gen_rand_expr();
     return; 
   }
-  depth++;
-  printf("%d\n",depth);
 }
 
 char* get_expr()
