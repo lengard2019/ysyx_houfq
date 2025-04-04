@@ -678,7 +678,7 @@ static void gen_rand_op()
 
 void gen_rand_expr() {
   int a = 0;
-  if(token_count < 32){
+  if(token_count < 20){
     a = choose(5);
   }
   else{
