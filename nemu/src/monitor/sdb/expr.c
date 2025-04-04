@@ -621,7 +621,7 @@ bool division(){
 // };
 
 static int index_buf = 0;
-static char buf[100] __attribute__((used)) = {};
+static char buf[10000] __attribute__((used)) = {};
 static int token_count = 0;
 static int depth;
 
