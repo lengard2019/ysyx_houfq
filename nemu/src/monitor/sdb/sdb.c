@@ -95,19 +95,44 @@ static struct {
 
 
 static int cmd_test(char *args){
-  char* e = get_expr();
-  printf("%s\n",e);
-  bool a = false;
-  bool is_division0 = false;
-  word_t result = expr(e,&a);
-  is_division0 = division();
-  clean();
+  // char* e = get_expr();
+  // printf("%s\n",e);
+  // bool a = false;
+  // bool is_division0 = false;
+  // word_t result = expr(e,&a);
+  // is_division0 = division();
+  // clean();
+  //   if (is_division0 == true){
+  //     printf("-1\n");
+  //   }
+  //   else{
+  //     printf("%d\n", result);
+  //   }
+  // return 0;
+  for (int i = 0; i < 10000; i ++){
+    char* e = get_expr();
+    bool is_division0 = false;
+    bool a = false;
+    word_t result = expr(e,&a);
+    is_division0 = division();
+
+    FILE *fp = fopen("test_expr.txt", "a");
+    if (fp == NULL) {
+      printf("无法打开文件\n");
+      return -1;
+    }
     if (is_division0 == true){
       printf("-1\n");
-    }
+      fprintf(fp, "%s -1\n", e);
+    } 
     else{
       printf("%d\n", result);
+      fprintf(fp, "%s %d\n", e, result);
     }
+
+    fclose(fp);
+  }
+  
   return 0;
 }
 
