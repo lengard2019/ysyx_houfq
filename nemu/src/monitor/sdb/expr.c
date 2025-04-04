@@ -623,7 +623,7 @@ bool division(){
 static int index_buf = 0;
 static char buf[100] __attribute__((used)) = {};
 static int token_count = 0;
-static int depth;
+static int depth = 0; 
 
 static int choose(int n)
 {
@@ -676,7 +676,7 @@ static void gen_rand_op()
 
 void gen_rand_expr() {
   int a = 0;
-  if(token_count < 20){
+  if(token_count < 20 && depth < 5){
     a = choose(5);
   }
   else{
@@ -687,6 +687,7 @@ void gen_rand_expr() {
     return; 
   }
   else if(a == 2){
+    depth ++;
     gen('(');
     gen_rand_expr(); 
     gen(')');
