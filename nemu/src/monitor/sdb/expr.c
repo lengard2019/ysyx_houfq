@@ -625,7 +625,7 @@ static char buf[100] __attribute__((used)) = {};
 static int token_count = 0;
 static int depth;
 
-int choose(int n)
+static int choose(int n)
 {
 	return rand() % n;
 }
@@ -662,7 +662,6 @@ static void gen_num()
     buf[index_buf] = c1;
     index_buf ++;
   }
-
   token_count ++;
 }
 
@@ -678,13 +677,13 @@ static void gen_rand_op()
 }
 
 void gen_rand_expr() {
-  // if(depth < 6){
-  //   depth ++;
-  // }
-  // else{
-  //   return;
-  // }
-  int a = choose(5);
+  int a = 0;
+  if(token_count < 32){
+    a = choose(5);
+  }
+  else{
+    a = 0;
+  }
   if(a == 0 || a == 1){
     gen_num();
     return; 
