@@ -115,6 +115,7 @@ static int cmd_test(char *args){
     bool a = false;
     word_t result = expr(e,&a);
     is_division0 = division();
+    clean();
 
     FILE *fp = fopen("test_expr.txt", "a");
     if (fp == NULL) {
@@ -122,11 +123,11 @@ static int cmd_test(char *args){
       return -1;
     }
     if (is_division0 == true){
-      printf("-1\n");
+      // printf("-1\n");
       fprintf(fp, "%s -1\n", e);
     } 
     else{
-      printf("%d\n", result);
+      // printf("%d\n", result);
       fprintf(fp, "%s %d\n", e, result);
     }
 
