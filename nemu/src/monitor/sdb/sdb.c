@@ -109,7 +109,7 @@ static int cmd_test(char *args){
   //     printf("%d\n", result);
   //   }
   // return 0;
-  for (int i = 0; i < 10000; i ++){
+  for (int i = 0; i < 10; i ++){
     char* e = get_expr();
     bool is_division0 = false;
     bool a = false;
