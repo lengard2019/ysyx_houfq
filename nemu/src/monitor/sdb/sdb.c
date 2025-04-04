@@ -111,7 +111,7 @@ static int cmd_test(char *args){
   // return 0;
   FILE *fp = fopen("test_expr.txt", "a");
   if (fp == NULL) {
-    printf("无法打开文件\n");
+    printf("can't open file\n");
     return -1;
   }
 
@@ -126,7 +126,7 @@ static int cmd_test(char *args){
     bool a = false;
     word_t result = expr(e, &a);
     // is_division0 = division();1
-    clean();
+    
 
     // if (is_division0) {
         // fprintf(fp, "%s -1\n", e);
@@ -134,6 +134,7 @@ static int cmd_test(char *args){
     // else{
         fprintf(fp, "%s %d\n", e, result);
     // }
+    clean();
   }
 
   fclose(fp);
