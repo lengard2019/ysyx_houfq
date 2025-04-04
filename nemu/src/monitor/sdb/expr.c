@@ -22,7 +22,7 @@
 #include <memory/paddr.h>
 #include <cpu/cpu.h>
 
-#define MAX_TOKENS 60 
+#define MAX_TOKENS 64 
 
 enum {
   TK_NOTYPE = 256, 
@@ -699,6 +699,7 @@ void gen_rand_expr() {
     return; 
   }
   depth++;
+  printf("%d\n",depth);
 }
 
 char* get_expr()
