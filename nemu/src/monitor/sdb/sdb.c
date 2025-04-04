@@ -109,7 +109,7 @@ static int cmd_test(char *args){
   //     printf("%d\n", result);
   //   }
   // return 0;
-  FILE *fp = fopen("test_expr.txt", "a");
+  FILE *fp = fopen("test_expr2.txt", "a");
   if (fp == NULL) {
     printf("can't open file\n");
     return -1;
