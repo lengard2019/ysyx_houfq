@@ -621,7 +621,7 @@ bool division(){
 // };
 
 static int index_buf = 0;
-static char buf[10000] __attribute__((used)) = {};
+static char buf[100] __attribute__((used)) = {};
 static int token_count = 0;
 static int depth;
 
@@ -663,13 +663,11 @@ static void gen_num()
     index_buf ++;
   }
   token_count ++;
+  printf("index_buf=%d, buf=%s\n", index_buf, buf);
 }
 
 static void gen_rand_op()
 {
-  // if(token_count >= MAX_TOKENS - 3){
-  //   return;
-  // }
 	char op[3] = {'+', '-', '*'};
 	int pos = rand() % 3;
 	buf[index_buf++] = op[pos];
