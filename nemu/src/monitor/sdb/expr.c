@@ -663,7 +663,6 @@ static void gen_num()
     index_buf ++;
   }
   token_count ++;
-  printf("index_buf=%d, buf=%s\n", index_buf, buf);
 }
 
 static void gen_rand_op()
