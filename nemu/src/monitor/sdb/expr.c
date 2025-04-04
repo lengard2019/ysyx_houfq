@@ -678,12 +678,12 @@ static void gen_rand_op()
 }
 
 void gen_rand_expr() {
-  if(depth < 6){
-    depth ++;
-  }
-  else{
-    return;
-  }
+  // if(depth < 6){
+  //   depth ++;
+  // }
+  // else{
+  //   return;
+  // }
   int a = choose(5);
   if(a == 0 || a == 1){
     gen_num();
