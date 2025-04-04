@@ -95,20 +95,22 @@ static struct {
 
 
 static int cmd_test(char *args){
-  // char* e = get_expr();
-  // printf("%s\n",e);
-  // bool a = false;
-  // bool is_division0 = false;
-  // word_t result = expr(e,&a);
-  // is_division0 = division();
-  // clean();
-  //   if (is_division0 == true){
-  //     printf("-1\n");
-  //   }
-  //   else{
-  //     printf("%d\n", result);
-  //   }
+#if CONFIG_SINGLETEST
+  char* e = get_expr();
+  printf("%s\n",e);
+  bool a = false;
+  bool is_division0 = false;
+  word_t result = expr(e,&a);
+  is_division0 = division();
+  clean();
+    if (is_division0 == true){
+      printf("-1\n");
+    }
+    else{
+      printf("%d\n", result);
+    }
   // return 0;
+#else
   FILE *fp = fopen("test_expr3.txt", "a");
   if (fp == NULL) {
     printf("can't open file\n");
@@ -138,6 +140,7 @@ static int cmd_test(char *args){
   }
 
   fclose(fp);
+#endif
   return 0;
 }
 
