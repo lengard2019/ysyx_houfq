@@ -115,7 +115,7 @@ static int cmd_test(char *args){
     return -1;
   }
 
-  for (int i = 0; i < 10; i++) {
+  for (int i = 0; i < 10000; i++) {
     char* e = get_expr();
     if (e == NULL) {
         printf("get_expr() 返回 NULL\n");
