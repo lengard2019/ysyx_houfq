@@ -22,7 +22,7 @@
 #include <memory/paddr.h>
 #include <cpu/cpu.h>
 
-#define MAX_TOKENS 32 
+#define MAX_TOKENS 60 
 
 enum {
   TK_NOTYPE = 256, 
@@ -100,7 +100,7 @@ typedef struct token {
   char str[32];
 } Token;
 
-static Token tokens[32] __attribute__((used)) = {};//即使某个变量或函数没有被显式使用，也不要优化掉它。
+static Token tokens[64] __attribute__((used)) = {};//即使某个变量或函数没有被显式使用，也不要优化掉它。
 static int nr_token __attribute__((used))  = 0;
 
 int char2int(char s[]){
@@ -632,9 +632,9 @@ int choose(int n)
 
 static void gen(char c)
 {
-  if(token_count >= MAX_TOKENS - 1){
-    return;
-  }
+  // if(token_count >= MAX_TOKENS - 1){
+  //   return;
+  // }
 	buf[index_buf] = c;
   index_buf++;
   token_count ++;
@@ -642,9 +642,9 @@ static void gen(char c)
 
 static void gen_num()
 {
-  if(token_count >= MAX_TOKENS - 1){
-    return;
-  }
+  // if(token_count >= MAX_TOKENS - 1){
+  //   return;
+  // }
 	int num = rand() % 100;
   if(num < 10){
     char c = num + '0';
@@ -668,9 +668,9 @@ static void gen_num()
 
 static void gen_rand_op()
 {
-  if(token_count >= MAX_TOKENS - 3){
-    return;
-  }
+  // if(token_count >= MAX_TOKENS - 3){
+  //   return;
+  // }
 	char op[3] = {'+', '-', '*'};
 	int pos = rand() % 3;
 	buf[index_buf++] = op[pos];
@@ -678,7 +678,7 @@ static void gen_rand_op()
 }
 
 void gen_rand_expr() {
-  if(depth > 4){
+  if(depth > 5){
     return;
   }
   int a = choose(5);
