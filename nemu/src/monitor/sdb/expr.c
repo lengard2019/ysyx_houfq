@@ -678,9 +678,10 @@ static void gen_rand_op()
 }
 
 void gen_rand_expr() {
-  depth++;
-  printf("%d\n",depth);
-  if(depth > 5){
+  if(depth < 6){
+    depth ++;
+  }
+  else{
     return;
   }
   int a = choose(5);
