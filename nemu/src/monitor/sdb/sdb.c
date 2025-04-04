@@ -122,18 +122,18 @@ static int cmd_test(char *args){
         continue;
     }
 
-    bool is_division0 = false;
+    // bool is_division0 = false;
     bool a = false;
     word_t result = expr(e, &a);
-    is_division0 = division();
+    // is_division0 = division();1
     clean();
 
-    if (is_division0) {
-        fprintf(fp, "%s -1\n", e);
-    }
-    else{
+    // if (is_division0) {
+        // fprintf(fp, "%s -1\n", e);
+    // }
+    // else{
         fprintf(fp, "%s %d\n", e, result);
-    }
+    // }
   }
 
   fclose(fp);
