@@ -144,7 +144,6 @@ static int cmd_test(char *args){
   return 0;
 }
 
-
 static int cmd_si(char *args){
   int step = 0;
   if(args == NULL)
@@ -253,6 +252,9 @@ void sdb_set_batch_mode() {
 }
 
 void sdb_mainloop() {
+// #if CONFIG_AMTEST
+//   sdb_set_batch_mode();
+// #endif
   if (is_batch_mode) {
     cmd_c(NULL);
     return;

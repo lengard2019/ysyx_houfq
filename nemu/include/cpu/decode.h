@@ -30,7 +30,7 @@ typedef struct Decode {
 __attribute__((always_inline))
 static inline void pattern_decode(const char *str, int len,
     uint64_t *key, uint64_t *mask, uint64_t *shift) {
-  uint64_t __key = 0, __mask = 0, __shift = 0;
+  uint64_t __key = 0, __mask = 0, __shift = 0; // 将模式字符串中的0和1抽取到整型变量key中, mask表示key的掩码, 而shift则表示opcode距离最低位的比特数量
 #define macro(i) \
   if ((i) >= len) goto finish; \
   else { \
@@ -96,7 +96,7 @@ finish:
   } \
 } while (0)
 
-#define INSTPAT_START(name) { const void * __instpat_end = &&concat(__instpat_end_, name);
-#define INSTPAT_END(name)   concat(__instpat_end_, name): ; }
+#define INSTPAT_START(name) { const void * __instpat_end = &&concat(__instpat_end_, name); // 定义一个代码块的开始，标签指针
+#define INSTPAT_END(name)   concat(__instpat_end_, name): ; } // 定义一个代码块的结束
 
 #endif

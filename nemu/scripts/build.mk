@@ -12,12 +12,17 @@ BUILD_DIR = $(WORK_DIR)/build
 
 BUILD_DIR_GDB = $(WORK_DIR)/build_gdb
 
+BUILD_DIR_HDEF = $(WORK_DIR)/build_Hdef
+
 INC_PATH := $(WORK_DIR)/include $(INC_PATH)
 OBJ_DIR  = $(BUILD_DIR)/obj-$(NAME)$(SO)
 BINARY   = $(BUILD_DIR)/$(NAME)$(SO)
 
 OBJ_DIR_GDB  = $(BUILD_DIR_GDB)/obj-$(NAME)$(SO)
 BINARY_GDB   = $(BUILD_DIR_GDB)/$(NAME)$(SO)
+
+OBJ_DIR_HDEF  = $(BUILD_DIR_HDEF)/obj-$(NAME)$(SO)
+BINARY_HDEF   = $(BUILD_DIR_HDEF)/$(NAME)$(SO)
 
 # Compilation flags
 ifeq ($(CC),clang)
@@ -34,6 +39,7 @@ OBJS = $(SRCS:%.c=$(OBJ_DIR)/%.o) $(CXXSRC:%.cc=$(OBJ_DIR)/%.o) #将 SRCS 中所
 
 OBJS_GDB = $(SRCS:%.c=$(OBJ_DIR_GDB)/%.o) $(CXXSRC:%.cc=$(OBJ_DIR_GDB)/%.o)
 
+OBJS_HDEF = $(SRCS:%.c=$(OBJ_DIR_HDEF)/%.i) $(CXXSRC:%.cc=$(OBJ_DIR_HDEF)/%.i)
 
 # Compilation patterns
 $(OBJ_DIR)/%.o: %.c
@@ -53,6 +59,13 @@ $(OBJ_DIR_GDB)/%.o: %.c
 	@mkdir -p $(dir $@)
 	@$(CC) -g $(CFLAGS) -c -o $@ $<
 	$(call call_fixdep, $(@:.o=.d), $@)
+
+$(OBJ_DIR_HDEF)/%.o: %.c
+	@echo + CC $<
+	@mkdir -p $(dir $@)
+	@$(CC) $(CFLAGS) -E -o $@ $<
+	$(call call_fixdep, $(@:.o=.d), $@)
+
 
 # Depencies
 -include $(OBJS:.o=.d)

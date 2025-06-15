@@ -13,19 +13,20 @@
 * See the Mulan PSL v2 for more details.
 ***************************************************************************************/
 
-#include <isa.h>
-#include <memory/paddr.h>
-#include <cpu/iringbuf.h>
-#include <cpu/ifetch.h>
-#include <cpu/ftrace.h>
+// #include <isa.h>
+#include <paddr.h>
+#include <stdio.h>
+// #include <cpu/iringbuf.h>
+// #include <cpu/ifetch.h>
+// #include <cpu/ftrace.h>
 
-void init_rand();
+// void init_rand();
 void init_log(const char *log_file);
 void init_mem();
-void init_difftest(char *ref_so_file, long img_size, int port);
-void init_device();
-void init_sdb();
-void init_disasm();
+// void init_difftest(char *ref_so_file, long img_size, int port);
+// void init_device();
+// void init_sdb();
+// void init_disasm();
 
 static void welcome() {
   Log("Trace: %s", MUXDEF(CONFIG_TRACE, ANSI_FMT("ON", ANSI_FG_GREEN), ANSI_FMT("OFF", ANSI_FG_RED)));
@@ -33,7 +34,7 @@ static void welcome() {
         "to record the trace. This may lead to a large log file. "
         "If it is not necessary, you can disable it in menuconfig"));
   Log("Build time: %s, %s", __TIME__, __DATE__);
-  printf("Welcome to %s-NEMU!\n", ANSI_FMT(str(__GUEST_ISA__), ANSI_FG_YELLOW ANSI_BG_RED));
+  printf("Welcome to riscv32e-NPC\n" );
   printf("For help, type \"help\"\n");
   // Log("Exercise: Please remove me in the source code and compile NEMU again.");
   //assert(0);
@@ -42,7 +43,7 @@ static void welcome() {
 #ifndef CONFIG_TARGET_AM
 #include <getopt.h>
 
-void sdb_set_batch_mode();
+// void sdb_set_batch_mode();
 
 static char *log_file = NULL;
 static char *ftrace_file = NULL;
@@ -65,7 +66,7 @@ static long load_img() {
   Log("The image is %s, size = %ld", img_file, size);
 
   fseek(fp, 0, SEEK_SET);
-  int ret = fread(guest_to_host(RESET_VECTOR), size, 1, fp);
+  int ret = fread(guest_to_host(RESET_VECTOR), size, 1, fp); // 
   assert(ret == 1);
 
   fclose(fp);
@@ -74,22 +75,22 @@ static long load_img() {
 
 static int parse_args(int argc, char *argv[]) {
   const struct option table[] = {
-    {"batch"    , no_argument      , NULL, 'b'},
+    // {"batch"    , no_argument      , NULL, 'b'},
     {"log"      , required_argument, NULL, 'l'},
-    {"ftrace"   , required_argument, NULL, 'f'}, 
-    {"diff"     , required_argument, NULL, 'd'},
-    {"port"     , required_argument, NULL, 'p'},
+    // {"ftrace"   , required_argument, NULL, 'f'}, 
+    // {"diff"     , required_argument, NULL, 'd'},
+    // {"port"     , required_argument, NULL, 'p'},
     {"help"     , no_argument      , NULL, 'h'},
     {0          , 0                , NULL,  0 },
   };
   int o;
-  while ( (o = getopt_long(argc, argv, "-bhl:f:d:p:", table, NULL)) != -1) {
+  while ( (o = getopt_long(argc, argv, "-hl:", table, NULL)) != -1) {
     switch (o) {
-      case 'b': sdb_set_batch_mode(); break; // 跳过sdb
-      case 'p': sscanf(optarg, "%d", &difftest_port); break;
+      // case 'b': sdb_set_batch_mode(); break; // 跳过sdb
+      // case 'p': sscanf(optarg, "%d", &difftest_port); break;
       case 'l': log_file = optarg; break;
-      case 'f': ftrace_file = optarg; break;
-      case 'd': diff_so_file = optarg; break;
+      // case 'f': ftrace_file = optarg; break;
+      // case 'd': diff_so_file = optarg; break;
       case 1: img_file = optarg; return 0;
       default:
         printf("Usage: %s [OPTION...] IMAGE [args]\n\n", argv[0]);
@@ -112,32 +113,32 @@ void init_monitor(int argc, char *argv[]) {
   parse_args(argc, argv);
 
   /* Set random seed. */
-  init_rand();
+  // init_rand();
 
   /* Open the log file. */
   init_log(log_file);
 
-  init_iringbuf();
+  IFDEF(CONFIG_TRACE, init_iringbuf());
 
-  init_ftrace(ftrace_file);
+  IFDEF(CONFIG_TRACE, init_ftrace(ftrace_file));
 
   /* Initialize memory. */
-  init_mem();
+  init_mem(); // 
 
   /* Initialize devices. */
   IFDEF(CONFIG_DEVICE, init_device());
 
   /* Perform ISA dependent initialization. */
-  init_isa();
+  // init_isa();
 
   /* Load the image to memory. This will overwrite the built-in image. */
   long img_size = load_img();
 
   /* Initialize differential testing. */
-  init_difftest(diff_so_file, img_size, difftest_port);
+  // init_difftest(diff_so_file, img_size, difftest_port);
 
   /* Initialize the simple debugger. */
-  init_sdb();
+  // init_sdb();
 
   IFDEF(CONFIG_ITRACE, init_disasm());
 

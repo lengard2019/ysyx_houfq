@@ -13,10 +13,30 @@
 * See the Mulan PSL v2 for more details.
 ***************************************************************************************/
 
-#ifndef __MACRO_H__
-#define __MACRO_H__
+#ifndef __COMMON_H__
+#define __COMMON_H__
 
+#include <stdint.h>
+#include <inttypes.h>
+#include <stdbool.h>
 #include <string.h>
+
+// #include <macro.h>
+
+
+#include <assert.h>
+#include <stdlib.h>
+
+
+typedef uint32_t  word_t;//32位
+typedef int32_t  sword_t;
+
+
+typedef word_t   vaddr_t;
+typedef uint32_t paddr_t;
+
+typedef uint16_t ioaddr_t;
+
 
 // macro stringizing
 #define str_temp(x) #x
@@ -97,14 +117,16 @@
 #define unlikely(cond) __builtin_expect(cond, 0)
 #endif
 
-// for AM IOE
-#define io_read(reg) \
-  ({ reg##_T __io_param; \
-    ioe_read(reg, &__io_param); \
-    __io_param; })
+// // for AM IOE
+// #define io_read(reg) \
+//   ({ reg##_T __io_param; \
+//     ioe_read(reg, &__io_param); \
+//     __io_param; })
 
-#define io_write(reg, ...) \
-  ({ reg##_T __io_param = (reg##_T) { __VA_ARGS__ }; \
-    ioe_write(reg, &__io_param); })
+// #define io_write(reg, ...) \
+//   ({ reg##_T __io_param = (reg##_T) { __VA_ARGS__ }; \
+//     ioe_write(reg, &__io_param); })
+
+#include <debug.h>
 
 #endif

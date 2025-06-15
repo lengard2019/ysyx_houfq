@@ -26,18 +26,21 @@ const char *regs[] = {
 void isa_reg_display() {
     int length =  sizeof(regs) / sizeof(regs[0]);
     for(int i = 0  ; i < length ; i ++)
-        printf("reg$%s ---> %d\n",regs[i], cpu.gpr[i]);
+        printf("reg$%s ---> %08x\n",regs[i], cpu.gpr[i]);
 }
 
 word_t isa_reg_str2val(const char *s, bool *success) {
   int index = 0;
-  for(int i = 0; i < 32; i++){
-    if(strcmp(regs[i],s)){
+  int i;
+  for(i = 0; i < 32; i++){
+    // printf("35 i = %d  %s %s\n", i, regs[i], s);
+    if(strcmp(regs[i],s) == 0){
+      // printf("37 %s %s\n", regs[i], s);
       index = i;
       break;
     }
   }
-  if(index != 32){
+  if(i != 32){
     *success = true;
     return cpu.gpr[index];
   }

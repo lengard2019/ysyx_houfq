@@ -28,12 +28,12 @@ $(BINARY_GDB):: compile_git
 override ARGS ?= --log=$(BUILD_DIR)/nemu-log.txt
 override ARGS += $(ARGS_DIFF)
 
-override ARGS_GDB ?= --log=$(BUILD_DIR_GBD)/nemu-log.txt
+override ARGS_GDB ?= --log=$(BUILD_DIR_GDB)/nemu-log.txt
 override ARGS_GDB += $(ARGS_DIFF)
 # Command to execute NEMU
 IMG ?=
 NEMU_EXEC := $(BINARY) $(ARGS) $(IMG)
-NEMU_EXEC_GDB := $(BINARY_GDB) $(ARGS) $(IMG)
+NEMU_EXEC_GDB := $(BINARY_GDB) $(ARGS_GDB) $(IMG)
 
 run-env: $(BINARY) $(DIFF_REF_SO)
 run-envgdb: $(BINARY_GDB) $(DIFF_REF_SO)
@@ -46,6 +46,8 @@ gdb: run-envgdb
 	$(call git_commit, "gdb NEMU")
 	gdb -s $(BINARY_GDB) --args $(NEMU_EXEC_GDB)
 
+hdef: 
+
 count: 
 	cloc $(NEMU_HOME) --include-lang="C,C/C++ Header"
 
@@ -54,5 +56,8 @@ $(clean-tools):
 	-@$(MAKE) -s -C $@ clean
 clean-tools: $(clean-tools)
 clean-all: clean distclean clean-tools
+
+name: 
+	echo $(NEMU_EXEC)
 
 .PHONY: run gdb run-env clean-tools clean-all $(clean-tools)

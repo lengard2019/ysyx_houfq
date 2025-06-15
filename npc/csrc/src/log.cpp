@@ -13,17 +13,26 @@
 * See the Mulan PSL v2 for more details.
 ***************************************************************************************/
 
-#include <cpu/cpu.h>
+#include <common.h>
+#include <debug.h>
 
-void sdb_mainloop();
+extern uint64_t g_nr_guest_inst;
 
-void engine_start() {
-#ifdef CONFIG_TARGET_AM
-  cpu_exec(-1);
-#else
-  /* Receive commands from user. */
-  sdb_mainloop();
+#ifndef CONFIG_TARGET_AM
+FILE *log_fp = NULL;
 
-  
-#endif
+void init_log(const char *log_file) {
+  log_fp = stdout;
+  if (log_file != NULL) {
+    FILE *fp = fopen(log_file, "w");
+    Assert(fp, "Can not open '%s'", log_file);
+    log_fp = fp;
+  }
+  Log("Log is written to %s", log_file ? log_file : "stdout");
 }
+
+bool log_enable() {
+  return MUXDEF(CONFIG_TRACE, (g_nr_guest_inst >= CONFIG_TRACE_START) &&
+         (g_nr_guest_inst <= CONFIG_TRACE_END), false);
+}
+#endif

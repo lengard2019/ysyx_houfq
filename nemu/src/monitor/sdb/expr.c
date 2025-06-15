@@ -148,6 +148,21 @@ void int2char(int x, char str[]) {
     str[tmp_index] = '\0';
 }
 
+static void remove_first_char(char *str) {
+  if (str == NULL || *str == '\0') {
+      return;
+  }
+
+  size_t len = strlen(str);
+  
+  if (len == 0) {
+      return; 
+  }
+
+  memmove(str, str + 1, len); 
+}
+
+
 
 static bool make_token(char *e) {
   int position = 0;
@@ -160,11 +175,11 @@ static bool make_token(char *e) {
     /* Try all rules one by one. */
     for (i = 0; i < NR_REGEX; i ++) {
       if (regexec(&re[i], e + position, 1, &pmatch, 0) == 0 && pmatch.rm_so == 0) {
-        char *substr_start = e + position;
+        // char *substr_start = e + position;
         int substr_len = pmatch.rm_eo;
 
-        Log("match rules[%d] = \"%s\" at position %d with len %d: %.*s",
-            i, rules[i].regex, position, substr_len, substr_len, substr_start);
+        // Log("match rules[%d] = \"%s\" at position %d with len %d: %.*s",
+        //     i, rules[i].regex, position, substr_len, substr_len, substr_start);
 
         position += substr_len;
 
@@ -294,9 +309,12 @@ static void token_special(){
 	  if(tokens[i].type == REG)
 	  {
 	    bool flag = true;
+
+      remove_first_char(tokens[i].str);
 	    int tmp = isa_reg_str2val(tokens[i].str, &flag);
+      
+      // printf("316 %d\n", flag);
 	    if(flag){
-        // printf("%d\n",tmp);
 		    int2char(tmp, tokens[i].str);
         tokens[i].type = NUM;
       }
@@ -306,6 +324,7 @@ static void token_special(){
 	    }
     }
   }
+
   /*
   * TODO
   * PC
