@@ -4,7 +4,7 @@
 #include <cpu/difftest.h>
 #include <locale.h>
 
-#define BUF_DEPTH 30
+#define BUF_DEPTH 100
 
 static char iring_buf[BUF_DEPTH][50] = {};
 

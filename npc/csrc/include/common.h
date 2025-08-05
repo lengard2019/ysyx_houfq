@@ -23,6 +23,7 @@
 
 // #include <macro.h>
 
+#include <config.h>
 
 #include <assert.h>
 #include <stdlib.h>
@@ -32,11 +33,13 @@ typedef uint32_t  word_t;//32位
 typedef int32_t  sword_t;
 
 
+
 typedef word_t   vaddr_t;
 typedef uint32_t paddr_t;
 
 typedef uint16_t ioaddr_t;
 
+#define FMT_PADDR MUXDEF(PMEM64, "0x%016" PRIx64, "0x%08" PRIx32)
 
 // macro stringizing
 #define str_temp(x) #x
@@ -83,6 +86,8 @@ typedef uint16_t ioaddr_t;
 // NOTE1: it ONLY works inside a function, since it calls `strcmp()`
 // NOTE2: macros defined to themselves (#define A A) will get wrong results
 #define isdef(macro) (strcmp("" #macro, "" str(macro)) != 0)
+
+#define FMT_WORD MUXDEF(CONFIG_ISA64, "0x%016" PRIx64, "0x%08" PRIx32)
 
 // simplification for conditional compilation
 #define __IGNORE(...)

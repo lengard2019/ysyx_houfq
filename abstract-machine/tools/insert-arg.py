@@ -2,7 +2,7 @@
 
 from sys import argv
 
-bin = argv[1]
+bin = argv[1] # 
 max_len = int(argv[2])
 placeholder = argv[3]
 mainargs = argv[4]

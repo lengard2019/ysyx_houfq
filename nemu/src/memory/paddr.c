@@ -27,7 +27,7 @@ static uint8_t *pmem = NULL;
 static uint8_t pmem[CONFIG_MSIZE] PG_ALIGN = {};//0x8000000 PG_ALIGN:强制 4096 字节对齐
 #endif
 
-uint8_t* guest_to_host(paddr_t paddr) { return pmem + paddr - CONFIG_MBASE; }//0x80000000
+uint8_t* guest_to_host(paddr_t paddr) { return pmem + paddr - CONFIG_MBASE; } // 0x80000000
 paddr_t host_to_guest(uint8_t *haddr) { return haddr - pmem + CONFIG_MBASE; }
 
 static word_t pmem_read(paddr_t addr, int len) {
@@ -54,7 +54,7 @@ void init_mem() {
 }
 
 word_t paddr_read(paddr_t addr, int len) {
-  if (likely(in_pmem(addr))) {//likely大概率发生
+  if (likely(in_pmem(addr))) { // likely大概率发生
     word_t val = pmem_read(addr, len);
 #ifdef CONFIG_MTRACE_COND 
     if(addr >= MTRACE_LOW && addr < MTRACE_HIGH){

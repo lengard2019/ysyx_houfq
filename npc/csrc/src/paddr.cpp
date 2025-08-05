@@ -1,5 +1,12 @@
 #include <paddr.h>
+#include "svdpi.h"
+#include "Vcpu_top__Dpi.h"
+#include <cpu/difftest.h>
+#include <time.h>
 
+
+static time_t raw_time;          // time_t 是时间戳类型（通常是 long）
+static struct tm *time_info;     // tm 结构体存储年月日等时间信息
 
 // 内存数组
 static uint8_t pmem[CONFIG_MSIZE] PG_ALIGN = {}; //0x8000000
@@ -27,11 +34,21 @@ static inline void host_write(void *addr, int len, word_t data) {
 }
 
 void init_mem() {
-  memset(pmem, 0, CONFIG_MSIZE);
-  printf("physical memory area [ %08x ,  %08x ]", PMEM_LEFT, PMEM_RIGHT);
+#if   defined(CONFIG_PMEM_MALLOC)
+  pmem = malloc(CONFIG_MSIZE);
+  assert(pmem);
+#endif
+  IFDEF(CONFIG_MEM_RANDOM, memset(pmem, rand(), CONFIG_MSIZE));
+  Log("physical memory area [" FMT_PADDR ", " FMT_PADDR "]", PMEM_LEFT, PMEM_RIGHT);
 }
+
+// void init_mem() {
+  // memset(pmem, 0, CONFIG_MSIZE);
+  // printf("physical memory area [ %08x ,  %08x ]", PMEM_LEFT, PMEM_RIGHT);
+// }
     
 word_t pmem_read(paddr_t addr, int len) {
+  // paddr_t addr_r = (paddr_t)addr;
   if(addr <= 0x87FFFFFF && addr >= 0x80000000){
     word_t ret = host_read(guest_to_host(addr), len);
     return ret;
@@ -52,3 +69,74 @@ void pmem_write(paddr_t addr, int len, word_t data) {
     // assert(0);
   }
 }
+
+int pmem_read_v(int addr, int len){
+  paddr_t addr_r = (paddr_t)addr;
+  word_t ret = 0x00000000;
+  uint64_t us = get_time();
+
+  if(addr_r == CONFIG_RTC_MMIO){
+    ret = (uint32_t)us;
+    difftest_skip_ref();
+  }
+  else if(addr_r == CONFIG_RTC_MMIO + 4){
+    ret = us >> 32;
+    difftest_skip_ref();
+  }
+  else if(addr_r == CONFIG_TIME){
+    time(&raw_time);
+    time_info = localtime(&raw_time);
+    ret = (uint32_t)time_info->tm_sec;
+  }
+  else if(addr_r == CONFIG_TIME + 4){
+    time(&raw_time);
+    time_info = localtime(&raw_time);
+    ret = (uint32_t)time_info->tm_min;
+  }
+  else if(addr_r == CONFIG_TIME + 8){
+    time(&raw_time);
+    time_info = localtime(&raw_time);
+    ret = (uint32_t)time_info->tm_hour;
+  }
+  else if(addr_r == CONFIG_TIME + 12){
+    time(&raw_time);
+    time_info = localtime(&raw_time);
+    ret = (uint32_t)time_info->tm_mday;
+  }
+  else if(addr_r == CONFIG_TIME + 16){
+    time(&raw_time);
+    time_info = localtime(&raw_time);
+    ret = (uint32_t)time_info->tm_mon;
+  }
+  else if(addr_r == CONFIG_TIME + 20){
+    time(&raw_time);
+    time_info = localtime(&raw_time);
+    ret = (uint32_t)time_info->tm_year;
+  }
+  else{
+    ret = pmem_read(addr_r, len);
+  }
+  return (int)ret;
+}
+
+void pmem_write_v(int addr, int len, int data){
+  paddr_t addr_r = (paddr_t)addr;
+  word_t data_r = (word_t) data;
+  if (addr_r == CONFIG_SERIAL_MMIO){
+    char ch = (char)(data & 0x000000ff);
+    putc(ch, stderr);
+    difftest_skip_ref();
+  }
+  else if(addr_r == CONFIG_RTC_MMIO || addr_r == CONFIG_RTC_MMIO + 4){
+    difftest_skip_ref();
+  }
+  else{
+    pmem_write(addr_r, len, data_r);
+  } 
+}
+
+
+
+
+
+

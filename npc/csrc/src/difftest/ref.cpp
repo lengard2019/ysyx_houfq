@@ -13,21 +13,45 @@
 * See the Mulan PSL v2 for more details.
 ***************************************************************************************/
 
-#ifndef __ISA_RISCV_H__
-#define __ISA_RISCV_H__
+// #include <isa.h>
+#include <cpu/cpu.h>
+// #include <difftest-def.h>
+#include <paddr.h>
 
-#include <common.h>
 
-typedef struct {
-  word_t gpr[MUXDEF(CONFIG_RVE, 16, 32)]; // 寄存器
-  vaddr_t pc;
-} MUXDEF(CONFIG_RV64, riscv64_CPU_state, riscv32_CPU_state); // MUXDEF是个选择函数，当macro被定义时，返回X，当未被定义时，返回Y
 
-// decode
-typedef struct {
-  uint32_t inst;
-} MUXDEF(CONFIG_RV64, riscv64_ISADecodeInfo, riscv32_ISADecodeInfo);
+// __EXPORT void difftest_memcpy(paddr_t addr, void *buf, size_t n, bool direction) {
 
-#define isa_mmu_check(vaddr, len, type) (MMU_DIRECT)
 
-#endif
+
+//   assert(0);
+// }
+
+// __EXPORT void difftest_regcpy(void *dut, bool direction) {
+  
+
+
+//   assert(0);
+// }
+
+// __EXPORT void difftest_exec(uint64_t n) {
+
+  
+
+
+//   assert(0);
+// }
+
+// __EXPORT void difftest_raise_intr(word_t NO) {
+
+
+
+//   assert(0);
+// }
+
+// __EXPORT void difftest_init(int port) {
+//   void init_mem();
+//   init_mem();
+//   /* Perform ISA dependent initialization. */
+//   init_isa();
+// }

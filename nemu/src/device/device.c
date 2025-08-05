@@ -20,6 +20,7 @@
 #include <SDL2/SDL.h>
 #endif
 
+
 void init_map();
 void init_serial();
 void init_timer();
@@ -52,7 +53,8 @@ void device_update() {
         break;
 #ifdef CONFIG_HAS_KEYBOARD
       // If a key was pressed
-      case SDL_KEYDOWN:
+      case SDL_KEYDOWN: {
+      }
       case SDL_KEYUP: {
         uint8_t k = event.key.keysym.scancode;
         bool is_keydown = (event.key.type == SDL_KEYDOWN);
@@ -86,4 +88,5 @@ void init_device() {
   IFDEF(CONFIG_HAS_SDCARD, init_sdcard());
 
   IFNDEF(CONFIG_TARGET_AM, init_alarm());
+
 }

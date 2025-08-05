@@ -13,25 +13,28 @@
 * See the Mulan PSL v2 for more details.
 ***************************************************************************************/
 
-#ifndef __MEMORY_PADDR_H__
-#define __MEMORY_PADDR_H__
+#ifndef __CPU_CPU_H__
+#define __CPU_CPU_H__
 
 #include <common.h>
 
-#define PMEM_LEFT  ((paddr_t)CONFIG_MBASE) // 0x80000000
-#define PMEM_RIGHT ((paddr_t)CONFIG_MBASE + CONFIG_MSIZE - 1)
-#define RESET_VECTOR (PMEM_LEFT + CONFIG_PC_RESET_OFFSET) // 0x80000000
+void npc_exec(uint64_t n);
 
-/* convert the guest physical address in the guest program to host virtual address in NEMU */
-uint8_t* guest_to_host(paddr_t paddr);
-/* convert the host virtual address in NEMU to guest physical address in the guest program */
-paddr_t host_to_guest(uint8_t *haddr);
+vaddr_t cpu_state();
 
-static inline bool in_pmem(paddr_t addr) {
-  return addr - CONFIG_MBASE < CONFIG_MSIZE;
-}
+void reg_display();
 
-word_t paddr_read(paddr_t addr, int len);
-void paddr_write(paddr_t addr, int len, word_t data);
+typedef struct {
+    word_t reg[16]; // 寄存器
+    vaddr_t pc;
+  } NPC_state;
+
+extern NPC_state cpu;
+
+// void set_nemu_state(int state, vaddr_t pc, int halt_ret);
+// void invalid_inst(vaddr_t thispc);
+
+// #define NEMUTRAP(thispc, code) set_nemu_state(NEMU_END, thispc, code)
+// #define INV(thispc) invalid_inst(thispc)
 
 #endif

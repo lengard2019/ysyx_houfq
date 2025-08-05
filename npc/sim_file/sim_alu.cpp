@@ -29,7 +29,7 @@ void sim_exit(){
 int main() {
   sim_init();
 
-  top->pc = 0x80000000; top->rs1 = 0x00000001; top->rs2 = 0x00000001; top->imm = 0x00000001; top->ALUctr = 0x00000000; top->ALUAsrc = 0x00000000; top->ALUBsrc = 0x00000000;
+  top->pc = 0x80000000; top->rs1 = 0x00000000; top->rs2 = 0x00000000; top->imm = 0x00000001; top->ALUctr = 0x00000000; top->ALUAsrc = 0x00000000; top->ALUBsrc = 0x00000000;
   step_and_dump_wave(); // add
   top->pc = 0x80000000; top->rs1 = 0x00000001; top->rs2 = 0x00000001; top->imm = 0x00000001; top->ALUctr = 0x00000008; top->ALUAsrc = 0x00000000; top->ALUBsrc = 0x00000000;
   step_and_dump_wave(); // sub

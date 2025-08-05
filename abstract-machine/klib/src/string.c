@@ -15,6 +15,14 @@ size_t strlen(const char *s) {
   panic("Not implemented");
 }
 
+size_t strnlen(const char *s, size_t n)
+{
+  const char *p = s;
+  while (n-- && *p)
+    p++;
+  return p - s;
+}
+
 char *strcpy(char *dst, const char *src) {
 
   char *res = dst;

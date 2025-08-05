@@ -13,17 +13,19 @@
 * See the Mulan PSL v2 for more details.
 ***************************************************************************************/
 
-#include <isa.h>
+// #include <isa.h>
 #include <cpu/cpu.h>
 #include <readline/readline.h>
 #include <readline/history.h>
 #include "sdb.h"
-#include <memory/vaddr.h>
+#include <paddr.h>
+// #include <reg.h>
 
 static int is_batch_mode = false;
 
 void init_regex();
 void init_wp_pool();
+void reg_display();
 
 /* We use the `readline' library to provide more flexibility to read from stdin. */
 static char* rl_gets() {
@@ -34,7 +36,7 @@ static char* rl_gets() {
     line_read = NULL;
   }
 
-  line_read = readline("(nemu) ");
+  line_read = readline("(npc) ");
 
   if (line_read && *line_read) {
     add_history(line_read);
@@ -44,16 +46,16 @@ static char* rl_gets() {
 }
 
 static int cmd_c(char *args) {
-  // printf("%d\n",nemu_state.state);//STOP
-  cpu_exec(-1);
-  // printf("%d\n",nemu_state.state);//NEMU_END
+  // printf("%d\n",npc_state.state);//STOP
+  npc_exec(-1);
+  // printf("%d\n",npc_state.state);//NEMU_END
   return 0;
 }
 
 
 static int cmd_q(char *args) {
-  nemu_state.state = NEMU_QUIT;
-  // printf("%d\n",nemu_state.state);
+  npc_state.state = NPC_QUIT;
+  // printf("%d\n",npc_state.state);
   return -1;
 }
 
@@ -92,6 +94,7 @@ static struct {
 };
 
 #define NR_CMD ARRLEN(cmd_table)
+
 
 static int cmd_test(char *args){
 #if CONFIG_SINGLETEST
@@ -150,7 +153,7 @@ static int cmd_si(char *args){
   else
     sscanf(args,"%d",&step);// 读入 Step
   // printf("%08x\n",cpu_state());
-  cpu_exec(step);
+  npc_exec(step);
   return 0;
 }
 
@@ -163,7 +166,7 @@ static int cmd_p(char *args){
 
     char* arr = strtok(args," ");
     char* mode = strtok(NULL," ");
-    char* h = "h";
+    const char* h = "h";
 
     bool is_division0 = false;
     bool a = false;
@@ -185,14 +188,14 @@ static int cmd_p(char *args){
 
 static int cmd_x(char *args){
     char* n = strtok(args," ");
-    char* baseaddr = strtok(NULL," "); // 后续的调用需传入NULL，提示从上一次分割结束开始
+    char* baseaddr = strtok(NULL," "); //后续的调用需传入NULL，提示从上一次分割结束开始
     int len = 0;
     paddr_t addr = 0;
     sscanf(n, "%d", &len);
     sscanf(baseaddr,"%x", &addr);
     for(int i = 0 ; i < len ; i ++)
     {
-      printf("%08x\n", vaddr_read(addr,4)); // addr len
+      printf("%08x\n", pmem_read(addr,4));//addr len
       addr = addr + 4;
     }
     return 0;
@@ -217,7 +220,7 @@ static int cmd_info(char *args){
     if(args == NULL)
         printf("No args.\n");
     else if(strcmp(args, "r") == 0)
-        isa_reg_display();//寄存器
+        reg_display();//寄存器
     else if(strcmp(args, "w") == 0)
         sdb_watchpoint_display();//监视点
     return 0;

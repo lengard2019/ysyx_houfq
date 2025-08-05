@@ -28,6 +28,7 @@
  * You can modify this value as you want.
  */
 #define MAX_INST_TO_PRINT 10
+// #define CONFIG_WATCHPOINT 1
 
 CPU_state cpu = {};
 uint64_t g_nr_guest_inst = 0;
@@ -43,7 +44,7 @@ static void trace_and_difftest(Decode *_this, vaddr_t dnpc) {
   if (g_print_step) { IFDEF(CONFIG_ITRACE, puts(_this->logbuf)); }
   IFDEF(CONFIG_DIFFTEST, difftest_step(_this->pc, dnpc));
 
-#if CONFIG_WATCHPOINT
+#ifdef CONFIG_WATCHPOINT
   for(int i = 0; i < 32;i++){
     
     if(watchpoint_diff(i) == true)
@@ -97,7 +98,7 @@ static void exec_once(Decode *s, vaddr_t pc) {
 
 static void execute(uint64_t n) {
   Decode s;
-  for (;n > 0; n --) {// unint64，若-1则传入最大的64位数
+  for (;n > 0; n --) { // unint64，若-1则传入最大的64位数
     exec_once(&s, cpu.pc);
     g_nr_guest_inst ++;
     trace_and_difftest(&s, cpu.pc);
@@ -127,7 +128,7 @@ vaddr_t cpu_state(){
 
 /* Simulate how the CPU works. */
 void cpu_exec(uint64_t n) {
-  g_print_step = (n < MAX_INST_TO_PRINT);//MAX_INST_TO_PRINT = 10;
+  g_print_step = (n < MAX_INST_TO_PRINT); // MAX_INST_TO_PRINT = 10;
   switch (nemu_state.state) {
     case NEMU_END: case NEMU_ABORT: case NEMU_QUIT:
       printf("Program execution has ended. To restart the program, exit NEMU and run again.\n");
@@ -138,6 +139,8 @@ void cpu_exec(uint64_t n) {
   uint64_t timer_start = get_time();
 
   execute(n);
+
+  // isa_reg_dispaly();
 
   ring_print();
 

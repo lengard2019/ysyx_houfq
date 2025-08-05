@@ -13,13 +13,13 @@
 * See the Mulan PSL v2 for more details.
 ***************************************************************************************/
 
-#include <isa.h>
+// #include <isa.h>
 
 /* We use the POSIX regex functions to process regular expressions.
  * Type 'man regex' for more information about POSIX regex functions.
  */
 #include <regex.h>
-#include <memory/paddr.h>
+#include <paddr.h>
 #include <cpu/cpu.h>
 
 #define MAX_TOKENS 64 
@@ -81,7 +81,7 @@ static regex_t re[NR_REGEX] = {};
 /* Rules are used for many times.
  * Therefore we compile them only once before any usage.
  */
-void init_regex() {//编译正则表达式
+void init_regex() { // 编译正则表达式
   int i;
   char error_msg[128];
   int ret;
@@ -301,27 +301,27 @@ static bool make_token(char *e) {
 
 static void token_special(){
 
-  /*reg*/
-  for(int i = 0; i < nr_token; i ++)
-  {
-	  if(tokens[i].type == REG)
-	  {
-	    bool flag = true;
+  // /*reg*/
+  // for(int i = 0; i < nr_token; i ++)
+  // {
+	//   if(tokens[i].type == REG)
+	//   {
+	//     bool flag = true;
 
-      remove_first_char(tokens[i].str);
-	    int tmp = isa_reg_str2val(tokens[i].str, &flag);
+  //     remove_first_char(tokens[i].str);
+	//     int tmp = isa_reg_str2val(tokens[i].str, &flag);
       
-      // printf("316 %d\n", flag);
-	    if(flag){
-		    int2char(tmp, tokens[i].str);
-        tokens[i].type = NUM;
-      }
-      else{
-		    printf("Transfrom error. \n");
-		    assert(0);
-	    }
-    }
-  }
+  //     // printf("316 %d\n", flag);
+	//     if(flag){
+	// 	    int2char(tmp, tokens[i].str);
+  //       tokens[i].type = NUM;
+  //     }
+  //     else{
+	// 	    printf("Transfrom error. \n");
+	// 	    assert(0);
+	//     }
+  //   }
+  // }
 
   /*
   * TODO
@@ -350,7 +350,7 @@ static void token_special(){
       paddr_t addr = 0;
       sscanf(tokens[i+1].str,"%x", &addr);
       // printf("%d\n",addr);
-      word_t value = paddr_read(addr,4);
+      word_t value = pmem_read(addr,4);
       snprintf(tokens[i+1].str, 11, "0x%08X", value);
       // printf("mark\n");
       // printf("%s\n",tokens[i+1].str);

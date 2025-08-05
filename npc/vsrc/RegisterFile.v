@@ -13,7 +13,7 @@ module RegisterFile #(ADDR_WIDTH = 1, DATA_WIDTH = 1) (
   reg [DATA_WIDTH-1:0] rf [2**ADDR_WIDTH-1:0]; // 2^ADDR_WIDTH
   
   always @(posedge clk) begin
-    if (Regwr) rf[Rw] <= busW;
+    if (Regwr && Rw != 0) rf[Rw] <= busW;
   end
 
   reg [DATA_WIDTH-1:0] busA_r;
@@ -22,22 +22,26 @@ module RegisterFile #(ADDR_WIDTH = 1, DATA_WIDTH = 1) (
   assign busA = busA_r;
   assign busB = busB_r;
 
-  always@(Ra) begin
+  always@(*) begin
     if(Ra == 0)begin
-      busA_r <= 0;
+      busA_r = 0;
     end
     else begin
-      busA_r <= rf[Ra];
+      busA_r = rf[Ra];
     end
   end
 
-  always@(Rb) begin
+  always@(*) begin
     if(Rb == 0)begin
-      busB_r <= 0;
+      busB_r = 0;
     end
     else begin
-      busB_r <= rf[Rb];
+      busB_r = rf[Rb];
     end
   end
 
+
+
+  
+  
 endmodule

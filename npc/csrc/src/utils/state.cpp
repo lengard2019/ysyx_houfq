@@ -13,21 +13,12 @@
 * See the Mulan PSL v2 for more details.
 ***************************************************************************************/
 
-#ifndef __ISA_RISCV_H__
-#define __ISA_RISCV_H__
+#include <utils.h>
 
-#include <common.h>
+NPCState npc_state = { .state = NPC_STOP };
 
-typedef struct {
-  word_t gpr[MUXDEF(CONFIG_RVE, 16, 32)]; // 寄存器
-  vaddr_t pc;
-} MUXDEF(CONFIG_RV64, riscv64_CPU_state, riscv32_CPU_state); // MUXDEF是个选择函数，当macro被定义时，返回X，当未被定义时，返回Y
-
-// decode
-typedef struct {
-  uint32_t inst;
-} MUXDEF(CONFIG_RV64, riscv64_ISADecodeInfo, riscv32_ISADecodeInfo);
-
-#define isa_mmu_check(vaddr, len, type) (MMU_DIRECT)
-
-#endif
+int is_exit_status_bad() {
+  int good = (npc_state.state == NPC_END && npc_state.halt_ret == 0) ||
+    (npc_state.state == NPC_QUIT);
+  return !good;
+}
