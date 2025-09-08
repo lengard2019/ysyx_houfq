@@ -31,6 +31,7 @@ enum { DIFFTEST_TO_DUT, DIFFTEST_TO_REF };
 #ifdef CONFIG_DIFFTEST
 
 static bool is_skip_ref = false;
+static bool load_skip = false; // load需要延迟一个skip
 static int skip_dut_nr_inst = 0;
 
 
@@ -64,6 +65,12 @@ void difftest_skip_ref() {
   // already write some memory, and the incoming instruction in NEMU
   // will load that memory, we will encounter false negative. But such
   // situation is infrequent.
+  skip_dut_nr_inst = 0;
+}
+
+void difftest_skip_load() {
+  load_skip = true;
+
   skip_dut_nr_inst = 0;
 }
 
@@ -121,7 +128,7 @@ static void checkregs(NPC_state *ref, vaddr_t pc) {
   }
 }
 
-void difftest_step(vaddr_t pc, vaddr_t npc) {// pc dnpc
+void difftest_step(vaddr_t pc, vaddr_t npc) { // pc dnpc
   NPC_state ref_r;
 
   if (skip_dut_nr_inst > 0) {
@@ -137,16 +144,27 @@ void difftest_step(vaddr_t pc, vaddr_t npc) {// pc dnpc
     return;
   }
 
+  ref_difftest_regcpy(&ref_r, DIFFTEST_TO_DUT);
+  // printf("pc = %08x, ref_pc = %08x\n", pc, ref_r.pc);
+
   if (is_skip_ref) {
-    // to skip the checking of an instruction, just copy the reg state to reference design
-    // printf("is_skip\n");
     ref_difftest_regcpy(&cpu, DIFFTEST_TO_REF);
-    printf("pc = %08x, nextpc = %08x\n", pc, npc);
-    is_skip_ref = false;
+    if(load_skip){
+      is_skip_ref = true;
+      load_skip = false;
+    }
+    else{
+      is_skip_ref = false;
+    }
     return;
   }
 
-  ref_difftest_exec(1);
+  if(load_skip) {
+    is_skip_ref = true;
+    load_skip = false;
+  }
+
+  ref_difftest_exec(1); // ref_r.pc == 0x80001214时崩溃
   ref_difftest_regcpy(&ref_r, DIFFTEST_TO_DUT);
 
   checkregs(&ref_r, pc);

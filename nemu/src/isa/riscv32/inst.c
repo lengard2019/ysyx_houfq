@@ -17,6 +17,7 @@
 #include <cpu/cpu.h>
 #include <cpu/ifetch.h>
 #include <cpu/decode.h>
+#include <isa.h>
 
 #define R(i) gpr(i) // 访问寄存器
 #define Mr vaddr_read
@@ -26,6 +27,20 @@ enum {
   TYPE_I, TYPE_U, TYPE_S, TYPE_J, TYPE_R, TYPE_B,
   TYPE_N, // none
 };
+
+static vaddr_t *csr_register(word_t imm) {
+  switch (imm)
+  {
+  case 0x341: return &(cpu.csr.mepc);
+  case 0x342: return &(cpu.csr.mcause);
+  case 0x300: return &(cpu.csr.mstatus);
+  case 0x305: return &(cpu.csr.mtvec);
+  default: panic("Unknown csr");
+  }
+}
+
+#define ECALL(dnpc) { dnpc = (isa_raise_intr(0x0000000b, s->pc)); }
+#define CSR(i) *csr_register(i)
 
 #define src1R() do { *src1 = R(rs1); } while (0)
 #define src2R() do { *src2 = R(rs2); } while (0)
@@ -124,6 +139,12 @@ static int decode_exec(Decode *s) {
 
   // J_type
   INSTPAT("??????? ????? ????? ??? ????? 11011 11", jal    , J, R(rd) = s -> pc + 4; s -> dnpc += imm - 4;); // 动态指令指向
+
+  // yichang
+  INSTPAT("??????? ????? ????? 001 ????? 11100 11", csrrw  , I, R(rd) = CSR(imm); CSR(imm) = src1);
+  INSTPAT("??????? ????? ????? 010 ????? 11100 11", csrrs  , I, R(rd) = CSR(imm); CSR(imm) |= src1);
+  INSTPAT("0000000 00000 00000 000 00000 11100 11", ecall  , I, ECALL(s->dnpc));
+  INSTPAT("0011000 00010 00000 000 00000 11100 11", mret   , I, s -> dnpc = CSR(0x341));
   
   // N_type  
   INSTPAT("0000000 00001 00000 000 00000 11100 11", ebreak , N, NEMUTRAP(s->pc, R(10)) ); // R(10) is $a0, 这里给了1？

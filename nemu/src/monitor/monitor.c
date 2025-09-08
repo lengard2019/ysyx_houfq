@@ -18,6 +18,7 @@
 #include <cpu/iringbuf.h>
 #include <cpu/ifetch.h>
 #include <cpu/ftrace.h>
+#include <cpu/cpu.h>
 
 void init_rand();
 void init_log(const char *log_file);
@@ -129,6 +130,8 @@ void init_monitor(int argc, char *argv[]) {
 
   /* Perform ISA dependent initialization. */
   init_isa();
+
+  init_mstatus();
 
   /* Load the image to memory. This will overwrite the built-in image. */
   long img_size = load_img();

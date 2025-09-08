@@ -19,7 +19,7 @@
 #define SCREEN_W (MUXDEF(CONFIG_VGA_SIZE_800x600, 800, 400))
 #define SCREEN_H (MUXDEF(CONFIG_VGA_SIZE_800x600, 600, 300))
 
-// #define SYNC_ADDR (CONFIG_VGA_CTL_MMIO + 4)
+#define SYNC_ADDR (CONFIG_VGA_CTL_MMIO + 4)
 
 static uint32_t screen_width() {
   return MUXDEF(CONFIG_TARGET_AM, io_read(AM_GPU_CONFIG).width, SCREEN_W); // 400
@@ -83,16 +83,15 @@ void vga_update_screen() {
 }
 
 void init_vga() {
-  vgactl_port_base = (uint32_t *)new_space(8); // 
+  vgactl_port_base = (uint32_t *)new_space(8); 
   vgactl_port_base[0] = (screen_width() << 16) | screen_height();
-  // printf("88 %08x\n", vgactl_port_base[0]);
 #ifdef CONFIG_HAS_PORT_IO
   add_pio_map ("vgactl", CONFIG_VGA_CTL_PORT, vgactl_port_base, 8, NULL);
 #else
   add_mmio_map("vgactl", CONFIG_VGA_CTL_MMIO, vgactl_port_base, 8, NULL);
 #endif
 
-  vmem = new_space(screen_size()); // 
+  vmem = new_space(screen_size());
   add_mmio_map("vmem", CONFIG_FB_ADDR, vmem, screen_size(), NULL);
   IFDEF(CONFIG_VGA_SHOW_SCREEN, init_screen());
   IFDEF(CONFIG_VGA_SHOW_SCREEN, memset(vmem, 0, screen_size()));

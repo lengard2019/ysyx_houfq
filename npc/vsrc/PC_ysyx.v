@@ -1,19 +1,23 @@
 module PC_ysyx(
-    // input           clk,
+
     input   [31:0]  imm,
     input   [31:0]  pc,
+    input           mpcWr,
+    input   [31:0]  mretPc,
     input   [31:0]  rs1,
     input           PCAsrc,
     input           PCBsrc,
 
     output  [31:0]  result
+    
 );
 
     reg     [31:0]  PCA;
     reg     [31:0]  PCB;
 
-    // reg     [31:0]  result;
+    reg     [31:0]  result_r;
 
+    assign result = result_r;
 
     // output declaration of module MuxKeyWithDefault
     // wire [DATA_LEN-1:0] out;
@@ -38,16 +42,15 @@ module PC_ysyx(
         }
     );
 
+    // assign result = PCA + PCB;
 
-    assign result = PCA + PCB;
-
-    // Reg #(32, 32'h80000000) u_nextpc
-    // (
-    //     clk,
-    //     1'b0,
-    //     result,
-    //     NextPc,
-    //     1'b1
-    // );
+    always @(*) begin
+        if(mpcWr == 1'b1)begin
+            result_r = mretPc;
+        end
+        else begin
+            result_r = PCA + PCB;
+        end
+    end
     
 endmodule

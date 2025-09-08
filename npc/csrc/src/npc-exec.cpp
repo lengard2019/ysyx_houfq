@@ -1,14 +1,19 @@
 #include "Vcpu_top.h"  // Verilator 生成的模型头文件
 #include "verilated.h"
 #include "Vcpu_top___024root.h"
-#include "verilated_vcd_c.h"  // 用于生成波形文件
+
 #include <paddr.h>
 // #include <reg.h>
 #include <common.h>
 #include <locale.h>
 #include <cpu/cpu.h>
 #include <cpu/difftest.h>
+#include <cpu/iringbuf.h>
+#include "sdb/sdb.h"
 
+#ifdef CONFIG_VCD_TRACE
+#include "verilated_vcd_c.h"  // 用于生成波形文件
+#endif
 
 #define MAX_INST_TO_PRINT 10
 // void init_monitor(int, char *[]);
@@ -23,7 +28,9 @@ static bool difftest_skip_first = false;
 #endif
 
 VerilatedContext* contextp = NULL;
+#ifdef CONFIG_VCD_TRACE
 VerilatedVcdC* tfp = NULL;
+#endif
 
 // static vluint64_t time = 0;
 
@@ -41,17 +48,22 @@ void step_and_dump_wave(){
     top->clk = !top->clk; // 翻转时钟
     top->eval();
     contextp->timeInc(5);
+#ifdef CONFIG_VCD_TRACE
     tfp->dump(contextp->time()); // 记录波形
+#endif
 }
 
 void init_npc(){
     contextp = new VerilatedContext;
-    tfp = new VerilatedVcdC;
+
     top = new Vcpu_top;
     contextp->traceEverOn(true);
+    
+#ifdef CONFIG_VCD_TRACE
+    tfp = new VerilatedVcdC;
     top->trace(tfp, 20);
     tfp->open("cpu_top.vcd");
-
+#endif
 
     // init
     top->clk = 1;
@@ -59,7 +71,6 @@ void init_npc(){
     top->NextPc = 0x80000000;
     top->inst = 0xffffffff;
     top->rootp->cpu_top__DOT__instr = 0xffffffff;
-
 
     cpu.pc = RESET_VECTOR;
     cpu.reg[0] = 0;
@@ -76,7 +87,9 @@ void init_npc(){
 
 void exit_npc(){
     step_and_dump_wave();
+#ifdef CONFIG_VCD_TRACE
     tfp->close();
+#endif
     printf("Simulation completed!\n");
 }
 
@@ -101,7 +114,11 @@ void reg_display() {
 #ifdef CONFIG_DIFFTEST
 static void trace_and_difftest(vaddr_t pc, vaddr_t dnpc) {
 #ifdef CONFIG_ITRACE_COND
-  if (ITRACE_COND) { log_write("    %08x %08x\n", pc, top->inst); }
+  // if (ITRACE_COND) { log_write("    %08x %08x\n", pc, top->inst); }
+  if (ITRACE_COND) {
+    char s[100];
+    snprintf(s, sizeof(s), "    %08x    %08x", pc, top->inst);
+    ring_write(s); }
 #endif
   if (g_print_step) { IFDEF(CONFIG_ITRACE, puts("abc\n")); }
   IFDEF(CONFIG_DIFFTEST, difftest_step(pc, top->NextPc));
@@ -111,7 +128,7 @@ static void trace_and_difftest(vaddr_t pc, vaddr_t dnpc) {
     
     if(watchpoint_diff(i) == true)
     {
-      nemu_state.state = NEMU_STOP;
+      npc_state.state = NPC_STOP;
       print_watchpoint(i);
     }
     wp_init(i);
@@ -167,7 +184,7 @@ static void npc_once(){
 
   step_and_dump_wave();  // 下降沿
 
-  if(pmem_read(top->NextPc, 4) == 0x00100073){ // ebreak
+  if(pmem_read(top->NextPc, 4) == 0x00100073){ // ebreak 00100073
     npc_state.state = NPC_END;
     npc_state.halt_pc = top->NextPc;
     npc_state.halt_ret = get_reg(10);
@@ -192,6 +209,8 @@ void npc_exec(uint64_t n){
     if (npc_state.state != NPC_RUNNING) break;
     IFDEF(CONFIG_DEVICE, device_update());
   }
+
+  ring_print();
 
   uint64_t timer_end = get_time();
   g_timer += timer_end - timer_start;

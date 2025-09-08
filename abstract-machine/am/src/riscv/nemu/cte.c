@@ -7,14 +7,14 @@ static Context* (*user_handler)(Event, Context*) = NULL;
 Context* __am_irq_handle(Context *c) {
   if (user_handler) {
     Event ev = {0};
+
     switch (c->mcause) {
+      case 0x0000000b: ev.event = EVENT_YIELD; break;
       default: ev.event = EVENT_ERROR; break;
     }
-
     c = user_handler(ev, c);
     assert(c != NULL);
   }
-
   return c;
 }
 
@@ -28,13 +28,19 @@ bool cte_init(Context*(*handler)(Event, Context*)) {
   user_handler = handler;
 
   return true;
-}
+} // 初始化trap函数地址
 
 Context *kcontext(Area kstack, void (*entry)(void *), void *arg) {
-  return NULL;
+
+  Context *kctx = (Context *)(kstack.end - sizeof(Context));
+  kctx->mepc = (uintptr_t)entry - 4; // 
+  kctx->GPR2 = (uintptr_t)arg;
+  kctx->mstatus = 0x1800;
+  return kctx;
 }
 
 void yield() {
+  // printf("yield_mark\n");
 #ifdef __riscv_e
   asm volatile("li a5, -1; ecall");
 #else
@@ -47,4 +53,5 @@ bool ienabled() {
 }
 
 void iset(bool enable) {
+
 }

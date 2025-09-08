@@ -7,7 +7,8 @@ module Data_mem(
 
     input   [31:0]  Addr,
     input   [2:0]   MemOp,
-    input           MemtoReg,
+    input   [31:0]  mRegData,
+    input   [1:0]   MemtoReg,
     input   [31:0]  DataIn,
     input           Wren,
     output  [31:0]  busW
@@ -15,6 +16,7 @@ module Data_mem(
 
     reg [31:0]  rdata;
     reg [31:0]  DataOut;  
+    reg [31:0]  addr_r;
 
     always @(posedge clk) begin
         if(Wren == 1'b1)begin
@@ -35,41 +37,57 @@ module Data_mem(
         end
     end
 
-    always @(*) begin
-        if(MemtoReg == 1'b1) begin
+    always @(*) begin // load 需要延迟一个 difftest
+        if(MemtoReg == 2'b01) begin
             case (MemOp)
                 3'b000: begin // lb
-                    rdata = pmem_read_v(Addr, 1);
+                    addr_r = Addr;
+                    rdata = pmem_read_v(addr_r, 1);
                     DataOut = {{24{rdata[7]}}, rdata[7:0]};
                 end
                 3'b100: begin // lbu
-                    rdata = pmem_read_v(Addr, 1);
+                    addr_r = Addr;
+                    rdata = pmem_read_v(addr_r, 1);
                     DataOut = rdata;
                 end
                 3'b001: begin // lh
-                    rdata = pmem_read_v(Addr, 2);
+                    addr_r = Addr;
+                    rdata = pmem_read_v(addr_r, 2);
                     DataOut = {{16{rdata[15]}}, rdata[15:0]};
                 end
                 3'b101: begin // lhu
-                    rdata = pmem_read_v(Addr, 2);
+                    addr_r = Addr;
+                    rdata = pmem_read_v(addr_r, 2);
                     DataOut = rdata;
                 end
                 3'b010: begin // lw
-                    rdata = pmem_read_v(Addr, 4);
+                    addr_r = Addr;
+                    rdata = pmem_read_v(addr_r, 4);
                     DataOut = rdata;
                 end
                 default begin
+                    addr_r = 32'h00000000;
                     rdata = 32'h00000000;
                     DataOut = 32'h00000000;
                 end
             endcase
         end
         else begin
+            addr_r = 32'h00000000;
             rdata = 32'h00000000;
             DataOut = 32'h00000000;
         end
     end
 
-    assign busW = (MemtoReg == 1'b1) ? DataOut : Addr;
+    MuxKeyWithDefault #(3, 2, 32) u_busw(
+        busW,
+        MemtoReg,
+        32'h00000000,
+        {
+            2'b00, Addr,
+            2'b01, DataOut,
+            2'b10, mRegData
+        }
+    );
 
 endmodule

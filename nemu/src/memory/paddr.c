@@ -24,7 +24,7 @@
 #if   defined(CONFIG_PMEM_MALLOC)
 static uint8_t *pmem = NULL;
 #else // CONFIG_PMEM_GARRAY
-static uint8_t pmem[CONFIG_MSIZE] PG_ALIGN = {};//0x8000000 PG_ALIGN:强制 4096 字节对齐
+static uint8_t pmem[CONFIG_MSIZE] PG_ALIGN = {}; // 0x8000000 PG_ALIGN: 强制 4096 字节对齐
 #endif
 
 uint8_t* guest_to_host(paddr_t paddr) { return pmem + paddr - CONFIG_MBASE; } // 0x80000000
@@ -54,7 +54,7 @@ void init_mem() {
 }
 
 word_t paddr_read(paddr_t addr, int len) {
-  if (likely(in_pmem(addr))) { // likely大概率发生
+  if (likely(in_pmem(addr))) { // likely 大概率发生
     word_t val = pmem_read(addr, len);
 #ifdef CONFIG_MTRACE_COND 
     if(addr >= MTRACE_LOW && addr < MTRACE_HIGH){

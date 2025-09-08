@@ -4,7 +4,6 @@
 #include <cpu/difftest.h>
 #include <time.h>
 
-
 static time_t raw_time;          // time_t 是时间戳类型（通常是 long）
 static struct tm *time_info;     // tm 结构体存储年月日等时间信息
 
@@ -77,41 +76,48 @@ int pmem_read_v(int addr, int len){
 
   if(addr_r == CONFIG_RTC_MMIO){
     ret = (uint32_t)us;
-    difftest_skip_ref();
+    // printf("80 mark\n");
+    difftest_skip_load();
   }
   else if(addr_r == CONFIG_RTC_MMIO + 4){
     ret = us >> 32;
-    difftest_skip_ref();
+    difftest_skip_load();
   }
   else if(addr_r == CONFIG_TIME){
     time(&raw_time);
     time_info = localtime(&raw_time);
     ret = (uint32_t)time_info->tm_sec;
+    difftest_skip_load();
   }
   else if(addr_r == CONFIG_TIME + 4){
     time(&raw_time);
     time_info = localtime(&raw_time);
     ret = (uint32_t)time_info->tm_min;
+    difftest_skip_load();
   }
   else if(addr_r == CONFIG_TIME + 8){
     time(&raw_time);
     time_info = localtime(&raw_time);
     ret = (uint32_t)time_info->tm_hour;
+    difftest_skip_load();
   }
   else if(addr_r == CONFIG_TIME + 12){
     time(&raw_time);
     time_info = localtime(&raw_time);
     ret = (uint32_t)time_info->tm_mday;
+    difftest_skip_load();
   }
   else if(addr_r == CONFIG_TIME + 16){
     time(&raw_time);
     time_info = localtime(&raw_time);
     ret = (uint32_t)time_info->tm_mon;
+    difftest_skip_load();
   }
   else if(addr_r == CONFIG_TIME + 20){
     time(&raw_time);
     time_info = localtime(&raw_time);
     ret = (uint32_t)time_info->tm_year;
+    difftest_skip_load();
   }
   else{
     ret = pmem_read(addr_r, len);
@@ -122,12 +128,13 @@ int pmem_read_v(int addr, int len){
 void pmem_write_v(int addr, int len, int data){
   paddr_t addr_r = (paddr_t)addr;
   word_t data_r = (word_t) data;
-  if (addr_r == CONFIG_SERIAL_MMIO){
+  if (addr_r == CONFIG_SERIAL_MMIO){ // uart
     char ch = (char)(data & 0x000000ff);
     putc(ch, stderr);
     difftest_skip_ref();
   }
   else if(addr_r == CONFIG_RTC_MMIO || addr_r == CONFIG_RTC_MMIO + 4){
+    // printf("138 mark\n");
     difftest_skip_ref();
   }
   else{

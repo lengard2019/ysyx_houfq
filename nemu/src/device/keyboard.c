@@ -31,7 +31,7 @@ f(LSHIFT) f(Z) f(X) f(C) f(V) f(B) f(N) f(M) f(COMMA) f(PERIOD) f(SLASH) f(RSHIF
 f(LCTRL) f(APPLICATION) f(LALT) f(SPACE) f(RALT) f(RCTRL) \
 f(UP) f(DOWN) f(LEFT) f(RIGHT) f(INSERT) f(DELETE) f(HOME) f(END) f(PAGEUP) f(PAGEDOWN)
 
-#define NEMU_KEY_NAME(k) NEMU_KEY_ ## k, // NEMU_KEY_NAME(ESCAPE)  // 展开后变成 NEMU_KEY_ESCAPE
+#define NEMU_KEY_NAME(k) NEMU_KEY_ ## k, 
 
 enum {
   NEMU_KEY_NONE = 0,
@@ -61,9 +61,6 @@ static uint32_t key_dequeue() {
     key = key_queue[key_f];
     key_f = (key_f + 1) % KEY_QUEUE_LEN;
   }
-  // if(key != 0x00000000){
-  //   printf("63 %08x\n", key);
-  // }
   return key;
 }
 
@@ -71,7 +68,6 @@ void send_key(uint8_t scancode, bool is_keydown) {
   if (nemu_state.state == NEMU_RUNNING && keymap[scancode] != NEMU_KEY_NONE) {
     uint32_t am_scancode = keymap[scancode] | (is_keydown ? KEYDOWN_MASK : 0);
     key_enqueue(am_scancode);
-
   }
 }
 #else // !CONFIG_TARGET_AM

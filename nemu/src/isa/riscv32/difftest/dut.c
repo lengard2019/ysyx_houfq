@@ -15,16 +15,20 @@
 
 #include <isa.h>
 #include <cpu/difftest.h>
+#include <cpu/iringbuf.h>
 #include "../local-include/reg.h"
 
 bool isa_difftest_checkregs(CPU_state *ref_r, vaddr_t pc) {
 
-  // printf("%08x %08x %08x\n", pc, ref_r->pc, cpu.pc);
   if(cpu.pc != ref_r->pc){
+    printf("41 %08x, %08x\n", cpu.pc, ref_r->pc);
+    // printf("pc = %08x\n", pc);
+    ring_show();
     return false;
   }
   for (int i = 0; i < 32; i++) {
     if (cpu.gpr[i] != ref_r->gpr[i]){
+      printf("46 %d %08x, %08x\n", i, cpu.gpr[i], ref_r->gpr[i]);
       return false;
     }
     else{

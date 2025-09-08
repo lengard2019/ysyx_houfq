@@ -108,16 +108,12 @@ int init_ftrace(const char *path) {
         Elf32_Sym *sym = &syms[i];
         const char *name = strs + sym->st_name;
         
-        // 跳过空名和未定义符号
         if (*name == '\0' || sym->st_shndx == SHN_UNDEF) {
             continue;
         }
         
-        // 获取符号类型(低4位)
         unsigned char type = ELF32_ST_TYPE(sym->st_info);
         
-        // 输出符号信息
-
         if(type == STT_FUNC){
             strcpy(fl_pool[j].func_name, name);
             fl_pool[j].start_addr = sym->st_value;

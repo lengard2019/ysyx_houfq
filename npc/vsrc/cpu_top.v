@@ -18,24 +18,24 @@ module cpu_top(
     assign Rb = instr[24:20];
     assign Rw = instr[11:7];
 
-
-    // wire    [2:0]    ExtOp; 
     wire    [31:0]   imm;
     wire             RegWr;
-    // wire    [2:0]    Branch;
-    wire             MemtoReg;
+
+    wire    [1:0]    MemtoReg;
     wire             MemWr;
     wire    [2:0]    MemOp;
     wire             ALUAsrc;
     wire    [1:0]    ALUBsrc;
-    wire    [3:0]    ALUctr;          
-    
+    wire    [3:0]    ALUctr;
+    wire             mRegWr;
 
-    wire    [2:0]   branch;
-    wire            less;
-    wire            zero;
-    wire            PCAsrc;
-    wire            PCBsrc;
+
+    wire    [2:0]    branch;
+    wire             less;
+    wire             zero;
+    wire             PCAsrc;
+    wire             PCBsrc;
+    wire    [31:0]   mRegData;
 
     wire [31:0] busW;
     
@@ -44,6 +44,7 @@ module cpu_top(
         .Addr     	(result    ),
         .MemOp    	(MemOp     ),
         .MemtoReg 	(MemtoReg  ),
+        .mRegData   (mRegData  ),
         .DataIn   	(rs2       ),
         .Wren     	(MemWr     ),
         .busW     	(busW      )
@@ -67,6 +68,7 @@ module cpu_top(
         .ExtOp          (ExtOp),              
         .imm            (imm),
         .RegWr          (RegWr),
+        .mRegWr         (mRegWr),
         .Branch         (branch),
         .MemtoReg       (MemtoReg),
         .MemWr          (MemWr),
@@ -106,15 +108,36 @@ module cpu_top(
         .result  	    (result   )
     );
 
+    // output declaration of module mReg
+    wire [31:0] mretPc;
+    wire        mpcWr;
+    wire [31:0] mRegData;
+    
+    mReg u_mReg(
+        .clk      	(clk       ),
+        .rs1      	(rs1       ),
+        .mode     	(ALUctr    ),
+        .imm      	(imm       ),
+        .pc       	(pc        ),
+        .mRegwr   	(mRegWr    ),
+        .mretPc   	(mretPc    ),
+        .mpcWr    	(mpcWr     ),
+        .mRegData 	(mRegData  )
+    );
+    
+
     // output declaration of module PC_ysyx
     wire [31:0] pc;
     
-    PC_ysyx u_PC_ysyx(   //计算NextPc
+    PC_ysyx u_PC_ysyx(   // 计算 NextPc
         .imm    	    (imm     ),
         .pc     	    (pc      ),
         .rs1    	    (rs1     ),
+        .mpcWr          (mpcWr   ),
+        .mretPc         (mretPc  ),
         .PCAsrc 	    (PCAsrc  ),
         .PCBsrc 	    (PCBsrc  ),
+        
         .result 	    (NextPc  )
     );
 
