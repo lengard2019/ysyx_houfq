@@ -44,7 +44,7 @@ void init_mstatus(){
 
 static void trace_and_difftest(Decode *_this, vaddr_t dnpc) {
 #ifdef CONFIG_ITRACE_COND
-  if (ITRACE_COND) { ring_write(_this->logbuf); }
+  // if (ITRACE_COND) { ring_write(_this->logbuf); }
   // if (ITRACE_COND) { log_write("    %s\n", _this->logbuf); }
 #endif
   if (g_print_step) { IFDEF(CONFIG_ITRACE, puts(_this->logbuf)); }
@@ -77,7 +77,7 @@ static void exec_once(Decode *s, vaddr_t pc) {
   uint8_t *inst = (uint8_t *)&s->isa.inst;
 
 #ifdef CONFIG_FTRACE
-  ftrace_call(s->pc, s->dnpc);
+  ftrace_call(s->pc, s->dnpc, s->isa.inst);
   ftrace_ret(s->isa.inst, s->pc);
 #endif
 

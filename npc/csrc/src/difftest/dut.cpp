@@ -31,7 +31,7 @@ enum { DIFFTEST_TO_DUT, DIFFTEST_TO_REF };
 #ifdef CONFIG_DIFFTEST
 
 static bool is_skip_ref = false;
-static bool load_skip = false; // load需要延迟一个skip
+// static bool load_skip = false; // load需要延迟一个skip
 static int skip_dut_nr_inst = 0;
 
 
@@ -68,11 +68,11 @@ void difftest_skip_ref() {
   skip_dut_nr_inst = 0;
 }
 
-void difftest_skip_load() {
-  load_skip = true;
+// void difftest_skip_load() {
+//   load_skip = true;
 
-  skip_dut_nr_inst = 0;
-}
+//   skip_dut_nr_inst = 0;
+// }
 
 // this is used to deal with instruction packing in QEMU.
 // Sometimes letting QEMU step once will execute multiple instructions.
@@ -144,27 +144,16 @@ void difftest_step(vaddr_t pc, vaddr_t npc) { // pc dnpc
     return;
   }
 
-  ref_difftest_regcpy(&ref_r, DIFFTEST_TO_DUT);
-  // printf("pc = %08x, ref_pc = %08x\n", pc, ref_r.pc);
-
   if (is_skip_ref) {
+    // to skip the checking of an instruction, just copy the reg state to reference design
     ref_difftest_regcpy(&cpu, DIFFTEST_TO_REF);
-    if(load_skip){
-      is_skip_ref = true;
-      load_skip = false;
-    }
-    else{
-      is_skip_ref = false;
-    }
+    // printf("skip\n");
+    is_skip_ref = false;
     return;
   }
 
-  if(load_skip) {
-    is_skip_ref = true;
-    load_skip = false;
-  }
-
-  ref_difftest_exec(1); // ref_r.pc == 0x80001214时崩溃
+  // printf("155 ref_r.pc = %08x\n", ref_r.pc);
+  ref_difftest_exec(1);
   ref_difftest_regcpy(&ref_r, DIFFTEST_TO_DUT);
 
   checkregs(&ref_r, pc);
@@ -172,3 +161,26 @@ void difftest_step(vaddr_t pc, vaddr_t npc) { // pc dnpc
 #else
 void init_difftest(char *ref_so_file, long img_size, int port) { }
 #endif
+
+
+  // ref_difftest_regcpy(&ref_r, DIFFTEST_TO_DUT);
+  // printf("pc = %08x, ref_pc = %08x\n", pc, ref_r.pc);
+
+  // if (is_skip_ref) {
+  //   ref_difftest_regcpy(&cpu, DIFFTEST_TO_REF);
+  //   if(load_skip){
+  //     is_skip_ref = true;
+  //     load_skip = false;
+  //   }
+  //   else{
+  //     is_skip_ref = false;
+  //   }
+  //   return;
+  // }
+  
+
+
+  // if(load_skip) {
+  //   is_skip_ref = true;
+  //   load_skip = false;
+  // }

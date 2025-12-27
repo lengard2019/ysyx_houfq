@@ -1,12 +1,13 @@
 module RegisterFile #(ADDR_WIDTH = 1, DATA_WIDTH = 1) (
   input clk,
-  input [DATA_WIDTH-1:0] busW, //写寄存器数据
-  input [ADDR_WIDTH-1:0] Ra, //地址，5位
+  input [DATA_WIDTH-1:0] busW, // 写寄存器数据
+  // input bus_valid,/
+  input [ADDR_WIDTH-1:0] Ra, // 地址，5位
   input [ADDR_WIDTH-1:0] Rb,
-  input [ADDR_WIDTH-1:0] Rw, //rd
+  input [ADDR_WIDTH-1:0] Rw, // rd
   input Regwr, // 写使能
 
-  output [DATA_WIDTH-1:0] busA, //两个输出的寄存器数值
+  output [DATA_WIDTH-1:0] busA, // 两个输出的寄存器数值
   output [DATA_WIDTH-1:0] busB
 
 );

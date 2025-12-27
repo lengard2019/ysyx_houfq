@@ -15,6 +15,8 @@
 
 // #include <isa.h>
 #include <paddr.h>
+#include <flash.h>
+#include <mrom.h>
 #include <stdio.h>
 #include <cpu/iringbuf.h>
 // #include <cpu/ifetch.h>
@@ -25,7 +27,7 @@ void init_log(const char *log_file);
 void init_mem();
 void init_difftest(char *ref_so_file, long img_size, int port);
 // void init_device();
-void init_npc();
+void init_npc(int argc, char *argv[]);
 void init_sdb();
 // void init_disasm();
 
@@ -67,7 +69,8 @@ static long load_img() {
   Log("The image is %s, size = %ld", img_file, size);
 
   fseek(fp, 0, SEEK_SET);
-  int ret = fread(guest_to_host(RESET_VECTOR), size, 1, fp); // 
+  // int ret = fread(guest_to_host(RESET_VECTOR), size, 1, fp); //
+  int ret = fread(guest_to_host_flash(0x00000000), size, 1, fp); //
   assert(ret == 1);
 
   fclose(fp);
@@ -130,17 +133,17 @@ void init_monitor(int argc, char *argv[]) {
   IFDEF(CONFIG_DEVICE, init_device());
 
   /* Perform ISA dependent initialization. */
-  // init_isa();
+  // init_mrom();
 
   /* Load the image to memory. This will overwrite the built-in image. */
   long img_size = load_img();
 
   init_iringbuf();
 
-  init_npc();
+  init_npc(argc, argv);
 
   /* Initialize differential testing. */
-  init_difftest(diff_so_file, img_size, difftest_port);
+  // init_difftest(diff_so_file, img_size, difftest_port);
 
   /* Initialize the simple debugger. */
   init_sdb();

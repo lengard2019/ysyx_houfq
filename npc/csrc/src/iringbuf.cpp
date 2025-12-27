@@ -23,7 +23,7 @@ void ring_write(char *s){
 }
 
 void ring_print(){
-    log_write("iringbuf_trace\n");
+    // log_write("iringbuf_trace\n");
     for(int a = 0; a < BUF_DEPTH; a++){
         if(iring_buf[a][0] != '\0'){
             if(i-1 != a){
@@ -37,7 +37,7 @@ void ring_print(){
 }
 
 void ring_show(){
-    printf("iringbuf_trace\n");
+    // printf("iringbuf_trace\n");
     for(int a = 0; a < BUF_DEPTH; a++){
         if(iring_buf[a][0] != '\0'){
             if(i - 1 != a){

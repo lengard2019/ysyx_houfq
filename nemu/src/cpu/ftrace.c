@@ -5,14 +5,14 @@
 #include <sys/mman.h>
 #include <elf.h>
 #include <string.h>
-#include <cpu/decode.h>
+#include <common.h>
 
-#define NR_FL  32
+#define NR_FL  2048
 #define RET "00008067"
 
 typedef struct func_list
 {
-    char func_name[32];
+    char func_name[512];
     uint32_t start_addr;
     uint32_t end_addr;
 }FL;
@@ -24,7 +24,7 @@ static int sym_count = 0;
 static FL fl_pool[NR_FL] = {};
 static int fl_lenth = 0;
 
-static char space_str[NR_FL] = {};
+static char space_str[4] = {};
 static int space_len = 0;
 
 const char* get_symbol_type(unsigned char type) {
@@ -40,7 +40,7 @@ const char* get_symbol_type(unsigned char type) {
     }
 }
 
-int init_ftrace(const char *path) {
+int init_ftrace(const char *path) { // 只运行一次
 
     if (!path) {
         fprintf(stderr, "Path is NULL\n");
@@ -94,7 +94,7 @@ int init_ftrace(const char *path) {
         return 0;
     }
 
-    syms = malloc(symtab->sh_size); // 记得先开内存后copy
+    syms = malloc(symtab->sh_size);
     strs = malloc(strtab->sh_size);
 
     memcpy(syms, (char *)map + symtab->sh_offset, symtab->sh_size);
@@ -114,17 +114,13 @@ int init_ftrace(const char *path) {
         
         unsigned char type = ELF32_ST_TYPE(sym->st_info);
         
-        if(type == STT_FUNC){
+        if(type == STT_FUNC && j < NR_FL){
             strcpy(fl_pool[j].func_name, name);
             fl_pool[j].start_addr = sym->st_value;
             fl_pool[j].end_addr = sym->st_value + sym->st_size;
             j++;
         }
 
-        // printf("%08lx %-8s %s\n", 
-        //        (unsigned long)sym->st_value, 
-        //        get_symbol_type(type),
-        //        name);
     }
 
     fl_lenth = j;
@@ -157,13 +153,19 @@ int init_ftrace(const char *path) {
 // }
 
 
-void ftrace_call(vaddr_t pc, vaddr_t dnpc) {
+void ftrace_call(vaddr_t pc, vaddr_t dnpc, uint32_t inst) {
 
-    for(int i = 0; i < fl_lenth; i++){
-        if(fl_pool[i].start_addr == dnpc){
-            log_write("%08x: %scall [%s@%08x]\n", pc, space_str, fl_pool[i].func_name, dnpc);
-            space_str[space_len] = ' ';
-            space_len ++;
+    uint32_t jarl_func = inst & 0x0000707F;
+    uint32_t jal_func = inst & 0x0000007F;
+
+    if(jarl_func == 0x00000067 || jal_func == 0x0000006F){
+        for(int i = 0; i < fl_lenth; i++){
+            if(fl_pool[i].start_addr == dnpc){
+                log_write("%08x: %scall [%s@%08x]\n", pc, space_str, fl_pool[i].func_name, dnpc);
+                space_str[space_len] = ' ';
+                space_len = 1;
+                break;
+            }
         }
     }
 }
@@ -175,7 +177,7 @@ void ftrace_ret(uint32_t inst, vaddr_t pc){
         for(int i = 0; i < fl_lenth; i++){
             if(pc < fl_pool[i].end_addr && pc > fl_pool[i].start_addr){
                 space_str[space_len] = '\0';
-                space_len --;
+                space_len = 0;
                 log_write("%08x: %sret %s\n", pc, space_str, fl_pool[i].func_name);
             }
         }

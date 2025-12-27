@@ -1,8 +1,12 @@
-#include "Vcpu_top.h"  // Verilator 生成的模型头文件
+#include "VysyxSoCTop.h"  // Verilator 生成的模型头文件
 #include "verilated.h"
-#include "Vcpu_top___024root.h"
+#include "VysyxSoCTop___024root.h"
+
+#include "svdpi.h"
+#include "VysyxSoCTop__Dpi.h"
 
 #include <paddr.h>
+#include <mrom.h>
 // #include <reg.h>
 #include <common.h>
 #include <locale.h>
@@ -12,13 +16,19 @@
 #include "sdb/sdb.h"
 
 #ifdef CONFIG_VCD_TRACE
-#include "verilated_vcd_c.h"  // 用于生成波形文件
+// #include "verilated_vcd_c.h"  // 用于生成波形文件
+#include "verilated_fst_c.h"
 #endif
+
+// extern "C" void flash_read(int32_t addr, int32_t *data) { assert(0); }
+
 
 #define MAX_INST_TO_PRINT 10
 // void init_monitor(int, char *[]);
 
 NPC_state cpu = {};
+
+static bool ebreak = false;
 
 uint64_t g_nr_guest_inst = 0;
 static uint64_t g_timer = 0; // unit: us
@@ -29,12 +39,12 @@ static bool difftest_skip_first = false;
 
 VerilatedContext* contextp = NULL;
 #ifdef CONFIG_VCD_TRACE
-VerilatedVcdC* tfp = NULL;
+VerilatedFstC* tfp = NULL;
 #endif
 
 // static vluint64_t time = 0;
 
-static Vcpu_top* top;
+static VysyxSoCTop* top;
 
 const char *regs[] = {
   "$0", "ra", "sp", "gp", "tp", "t0", "t1", "t2",
@@ -43,9 +53,8 @@ const char *regs[] = {
   "s8", "s9", "s10", "s11", "t3", "t4", "t5", "t6"
 };
 
-
 void step_and_dump_wave(){
-    top->clk = !top->clk; // 翻转时钟
+    top->clock = !top->clock; // 翻转时钟
     top->eval();
     contextp->timeInc(5);
 #ifdef CONFIG_VCD_TRACE
@@ -53,34 +62,32 @@ void step_and_dump_wave(){
 #endif
 }
 
-void init_npc(){
+void init_npc(int argc, char *argv[]){
     contextp = new VerilatedContext;
 
-    top = new Vcpu_top;
+    Verilated::commandArgs(argc, argv);
+
+    top = new VysyxSoCTop;
     contextp->traceEverOn(true);
     
 #ifdef CONFIG_VCD_TRACE
-    tfp = new VerilatedVcdC;
+    tfp = new VerilatedFstC;
     top->trace(tfp, 20);
-    tfp->open("cpu_top.vcd");
+    tfp->open("soc_test.fst");
 #endif
 
     // init
-    top->clk = 1;
-    top->rst = 1;
-    top->NextPc = 0x80000000;
-    top->inst = 0xffffffff;
-    top->rootp->cpu_top__DOT__instr = 0xffffffff;
+    top->clock = 1;
+    top->reset = 1;
 
-    cpu.pc = RESET_VECTOR;
+    cpu.pc = 0x30000000;
     cpu.reg[0] = 0;
 
     for (int i = 0; i < 4; i++){
         step_and_dump_wave();
     }
 
-    top->rst = 0;
-    top->NextPc = 0x80000000;
+    top->reset = 0;
     step_and_dump_wave(); // 下降沿
     // top->eval();
 }
@@ -101,27 +108,33 @@ static inline int check_reg_idx(int idx) {
 
 word_t get_reg(int idx){
   // return top->rootp->cpu_top__DOT__u_register__DOT__rf[check_reg_idx(idx)];
-  return top->rootp->cpu_top__DOT__u_register__DOT__rf[check_reg_idx(idx)];
+  return top->rootp->ysyxSoCTop__DOT__dut__DOT__asic__DOT__cpu__DOT__cpu__DOT__u_register__DOT__rf[check_reg_idx(idx)];
 }
 
 void reg_display() {
   for(int i = 0; i < 16 ; i ++){
-    printf("reg$%s ---> %08x\n",regs[i], top->rootp->cpu_top__DOT__u_register__DOT__rf[i]);
+    printf("reg$%s ---> %08x\n",regs[i], top->rootp->ysyxSoCTop__DOT__dut__DOT__asic__DOT__cpu__DOT__cpu__DOT__u_register__DOT__rf[i]);
   }
 }
 /*end*/
 
-#ifdef CONFIG_DIFFTEST
+
+void call_ebreak() {
+  ebreak = true;
+}
+
+// #ifdef CONFIG_DIFFTEST
 static void trace_and_difftest(vaddr_t pc, vaddr_t dnpc) {
 #ifdef CONFIG_ITRACE_COND
-  // if (ITRACE_COND) { log_write("    %08x %08x\n", pc, top->inst); }
-  if (ITRACE_COND) {
-    char s[100];
-    snprintf(s, sizeof(s), "    %08x    %08x", pc, top->inst);
-    ring_write(s); }
+  log_write("  log\n");
+  if (ITRACE_COND) { log_write("    %08x %08x\n", pc, top->rootp->ysyxSoCTop__DOT__dut__DOT__asic__DOT__cpu__DOT__cpu__DOT__u_IDU_ysyx__DOT__instr); }
+  // if (ITRACE_COND) {
+  //   char s[100];
+  //   snprintf(s, sizeof(s), "    %08x    %08x", pc, top->rootp->ysyxSoCTop__DOT__dut__DOT__asic__DOT__cpu__DOT__cpu__DOT__u_IDU_ysyx__DOT__instr);
+  //   ring_write(s); }
 #endif
   if (g_print_step) { IFDEF(CONFIG_ITRACE, puts("abc\n")); }
-  IFDEF(CONFIG_DIFFTEST, difftest_step(pc, top->NextPc));
+  IFDEF(CONFIG_DIFFTEST, difftest_step(pc, dnpc));
 
 #ifdef CONFIG_WATCHPOINT
   for(int i = 0; i < 32;i++){
@@ -135,7 +148,7 @@ static void trace_and_difftest(vaddr_t pc, vaddr_t dnpc) {
   }
 #endif
 }
-#endif
+// #endif
 
 static void state_copy(){
   for(int i = 0; i < 16; i++){
@@ -159,13 +172,13 @@ void assert_fail_msg() {
 }
 
 vaddr_t cpu_state(){
-  return top->rootp->cpu_top__DOT__pc;
+  return top->rootp->ysyxSoCTop__DOT__dut__DOT__asic__DOT__cpu__DOT__cpu__DOT__u_IFU_ysyx__DOT__pc_r;
 }
 
 static void npc_once(){
   
   // printf("81 addr = %08x\n", top->NextPc);
-  top->inst = pmem_read(top->NextPc, 4); // 取指令
+  // top->inst = pmem_read(top->NextPc, 4); // 取指令
   // printf("----> %08x\n", top->inst);
 
  
@@ -173,22 +186,30 @@ static void npc_once(){
   step_and_dump_wave();  // 上升沿
 
   // difftest
-#ifdef CONFIG_DIFFTEST
-  state_copy();
-  if(difftest_skip_first == true){ // 跳过第一次difftest
-    trace_and_difftest(top->rootp->cpu_top__DOT__pc, top->NextPc);
-  }
-  difftest_skip_first = true;
-#endif
+// #ifdef CONFIG_DIFFTEST
+  IFDEF(CONFIG_DIFFTEST, state_copy());
+  // state_copy();
+  if(top->reset == 0 && top->rootp->ysyxSoCTop__DOT__dut__DOT__asic__DOT__cpu__DOT__cpu__DOT__u_EXU_ysyx__DOT__current_state == 0){
+    // if(difftest_skip_first == true){// 跳过第一次difftest
+      // printf("pc = %08x, Next_pc = %08x\n", top->pc, top->Next_pc);
+      trace_and_difftest(top->rootp->ysyxSoCTop__DOT__dut__DOT__asic__DOT__cpu__DOT__cpu__DOT__u_WBU_ysyx__DOT__pc_r, top->rootp->ysyxSoCTop__DOT__dut__DOT__asic__DOT__cpu__DOT__cpu__DOT__u_LSU_ysyx__DOT__Next_pc_r);
+    }
+    else{
+      // difftest_skip_first = true;
+    }
+  // }
+  
+// #endif
   
 
   step_and_dump_wave();  // 下降沿
 
-  if(pmem_read(top->NextPc, 4) == 0x00100073){ // ebreak 00100073
+  if(ebreak == true){
     npc_state.state = NPC_END;
-    npc_state.halt_pc = top->NextPc;
+    npc_state.halt_pc = cpu_state();
     npc_state.halt_ret = get_reg(10);
   }
+  
 }
 
 void npc_exec(uint64_t n){
@@ -197,7 +218,7 @@ void npc_exec(uint64_t n){
     case NPC_END: case NPC_ABORT: case NPC_QUIT:
       printf("Program execution has ended. To restart the program, exit NEMU and run again.\n");
       return;
-    default: npc_state.state = NPC_RUNNING; // NEMU_RUNNING 或 NEMU_STOP
+    default: npc_state.state = NPC_RUNNING;
   }
 
   uint64_t timer_start = get_time();

@@ -12,7 +12,6 @@ static inline void outw(uintptr_t addr, uint16_t data) { *(volatile uint16_t *)a
 static inline void outl(uintptr_t addr, uint32_t data) { *(volatile uint32_t *)addr = data; }
 
 
-
 #define PTE_V 0x01
 #define PTE_R 0x02
 #define PTE_W 0x04
