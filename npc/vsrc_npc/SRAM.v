@@ -1,45 +1,47 @@
-import "DPI-C" function int pmem_read_v(input int addr, input int len);
-import "DPI-C" function void pmem_write_v(input int addr, input int wmask, input int data);
+import "DPI-C" function int pmem_read_v(input int addr, input byte len);
+import "DPI-C" function void pmem_write_v(input int addr, input byte wmask, input int data);
 import "DPI-C" function int rand_v();
 
 module SRAM(
-    input           clk,
-    input           reset,
+    input               clk,
+    input               reset,
 
-    // slave AXI4
-    // Address Read
-    input   [31:0]  s_araddr,
-    input           s_arvalid,
-    output          s_arready,
+    output              io_slave_awready, 
+    input               io_slave_awvalid, 
+    input   [31:0]      io_slave_awaddr,  
+    input   [3:0]       io_slave_awid,    
+    input   [7:0]       io_slave_awlen,   
+    input   [2:0]       io_slave_awsize,  
+    input   [1:0]       io_slave_awburst, 
+    output              io_slave_wready,  
+    input               io_slave_wvalid,  
+    input   [31:0]      io_slave_wdata,   
+    input   [3:0]       io_slave_wstrb,   
+    input               io_slave_wlast,   
+    input               io_slave_bready,  
+    output              io_slave_bvalid,  
+    output  [1:0]       io_slave_bresp,   
+    output  [3:0]       io_slave_bid,     
 
-    // Data Read 
-    output  [31:0]  s_rdata,
-    output  [1:0]   s_rresp,
-    output          s_rvalid,
-    input           s_rready,
-
-    // Address Write
-    input   [31:0]  s_awaddr,
-    input           s_awvalid,
-    output          s_awready,
-
-    // Data Write
-    input   [31:0]  s_wdata,
-    input   [3:0]   s_wstrb, // mask 
-    input           s_wvalid,
-    output          s_wready,
-
-    // Write error
-    output  [1:0]   s_bresp,
-    output          s_bvalid,
-    input           s_bready
-
+    output              io_slave_arready, 
+    input               io_slave_arvalid, 
+    input   [31:0]      io_slave_araddr,  
+    input   [3:0]       io_slave_arid,    
+    input   [7:0]       io_slave_arlen,   
+    input   [2:0]       io_slave_arsize,  
+    input   [1:0]       io_slave_arburst, 
+    input               io_slave_rready,  
+    output              io_slave_rvalid,  
+    output  [1:0]       io_slave_rresp,   
+    output  [31:0]      io_slave_rdata,   
+    output              io_slave_rlast,   
+    output  [3:0]       io_slave_rid
 );
 
     localparam IDLE             = 0;
     localparam WAIT_ARVALID     = 1;
-    localparam WAIT_DATA        = 2;
-    localparam WAIT_RREADY      = 3;
+    localparam DELAY            = 2;
+    localparam WAIT_RLAST       = 3;
 
     localparam IDLE_W           = 4;
     localparam WAIT_AWVALID     = 5;
@@ -53,9 +55,13 @@ module SRAM(
     reg     [3:0]   current_state;
     reg     [3:0]   next_state;
 
-    reg     [31:0]  delay; // int rand()
+    reg     [31:0]  delay; 
     reg     [31:0]  delay_cnt;
 
+
+    assign  io_slave_rlast  = 1'b0;
+    assign  io_slave_rid    = 4'h0;
+    assign  io_slave_bid    = 4'h0;
 
     // SRAM READ
     always @(posedge clk or posedge reset) begin
@@ -75,29 +81,29 @@ module SRAM(
             end
 
             WAIT_ARVALID: begin
-                if(s_arvalid == 1'b1) begin
-                    next_state = WAIT_DATA;
+                if(io_slave_arvalid == 1'b1) begin
+                    next_state = DELAY;
                 end
                 else begin
                     next_state = WAIT_ARVALID;
                 end
             end
 
-            WAIT_DATA: begin
+            DELAY: begin
                 if(delay_cnt == delay) begin
-                    next_state = WAIT_RREADY;
+                    next_state = WAIT_RLAST;
                 end
                 else begin
-                    next_state = WAIT_DATA;
+                    next_state = DELAY;
                 end
             end
 
-            WAIT_RREADY: begin
-                if(s_rready == 1'b1) begin
+            WAIT_RLAST: begin
+                if(io_slave_rready == 1'b1) begin // burst
                     next_state = IDLE;
                 end
                 else begin
-                    next_state = WAIT_RREADY;
+                    next_state = WAIT_RLAST;
                 end
             end
 
@@ -109,9 +115,6 @@ module SRAM(
 
     always @(posedge clk or posedge reset) begin
         if(reset == 1'b1)begin
-            // s_rdata_r       <= 32'hffffffff;
-            // s_rresp_r       <= 2'b00;
-            // s_rvalid_r      <= 1'b0;
             delay_cnt       <= 32'h00000000;
         end
         else begin
@@ -119,30 +122,17 @@ module SRAM(
 
                 IDLE: begin
                     delay_cnt       <= 32'h00000000;
-                    // s_rdata_r       <= 32'hffffffff;
-                    // s_rvalid_r      <= 1'b0;
                 end
 
-                WAIT_ARVALID: begin
-                    // s_rvalid_r      <= 1'b0;
-                end
-
-                WAIT_DATA: begin
+                DELAY: begin
                     delay_cnt       <= delay_cnt + 1'b1;
-                    // s_rvalid_r      <= 1'b0;
                 end
 
-                WAIT_RREADY: begin
+                WAIT_RLAST: begin
                     delay_cnt       <= 32'h00000000;
-                    // s_rdata_r       <= data_r;
-                    // s_rresp_r       <= 2'b00;
-                    // s_rvalid_r      <= 1'b1;
                 end
 
                 default: begin
-                    // s_rdata_r       <= 32'hffffffff;
-                    // s_rresp_r       <= 2'b00;
-                    // s_rvalid_r      <= 1'b0;
                     delay_cnt       <= 32'h00000000;
                 end
             endcase
@@ -157,8 +147,8 @@ module SRAM(
             delay           <= 32'h00000000;
         end
         else begin
-            if(s_arvalid == 1'b1 && s_arready == 1'b1) begin // 握手，传输数据
-                data_r          <= pmem_read_v(s_araddr, 4);
+            if(io_slave_arvalid == 1'b1 && io_slave_arready == 1'b1) begin // 握手，传输数据
+                data_r          <= pmem_read_v({io_slave_araddr[31:2], 2'b00}, {5'b00000, io_slave_arsize});
                 delay           <= rand_v();
             end
             else begin
@@ -166,30 +156,21 @@ module SRAM(
         end
     end
 
-    assign s_arready    = (current_state == WAIT_ARVALID) ? 1'b1 : 1'b0;
-    assign s_rvalid     = (current_state == WAIT_RREADY) ? 1'b1 : 1'b0;
-    assign s_rdata      = (current_state == WAIT_RREADY) ? data_r : 32'hffffffff;
-    assign s_rresp      = (current_state == WAIT_RREADY) ? 2'b00 : 2'b11;
+    assign io_slave_arready     = (current_state == WAIT_ARVALID) ? 1'b1 : 1'b0;
+    assign io_slave_rvalid      = (current_state == WAIT_RLAST) ? 1'b1 : 1'b0;
+    assign io_slave_rdata       = (current_state == WAIT_RLAST) ? data_r : 32'hffffffff;
+    assign io_slave_rresp       = (current_state == WAIT_RLAST) ? 2'b00 : 2'b11;
 
 
     reg     [3:0]   current_state_w;
     reg     [3:0]   next_state_w;
 
-    // reg             s_awready_r;
-    // reg             s_wready_r;
-    // reg     [1:0]   s_bresp_r;
-    // reg             s_bvalid_r;
-
     reg     [31:0]  waddr_r;
     reg     [31:0]  delay_w; // int rand()
     reg     [31:0]  delay_cnt_w;
 
-    // assign  s_awready       = s_awready_r;
-    // assign  s_wready        = s_wready_r;
-    // assign  s_bresp         = s_bresp_r;
-    // assign  s_bvalid        = s_bvalid_r;
 
-    // SRAM WRITE
+    // SDRAM WRITE
     always @(posedge clk or posedge reset) begin
         if(reset == 1'b1) begin
             current_state_w <= IDLE_W;
@@ -207,7 +188,7 @@ module SRAM(
             end
 
             WAIT_AWVALID: begin // 握手时s_wready_r应该置高
-                if(s_awvalid == 1'b1) begin
+                if(io_slave_awvalid == 1'b1) begin
                     next_state_w = WAIT_WVALID;
                 end
                 else begin
@@ -216,7 +197,7 @@ module SRAM(
             end
 
             WAIT_WVALID: begin
-                if(s_wvalid == 1'b1) begin
+                if(io_slave_wvalid == 1'b1) begin
                     next_state_w = WAIT_WDATA;
                 end
                 else begin
@@ -234,7 +215,7 @@ module SRAM(
             end
 
             WAIT_BREADY: begin
-                if(s_bready == 1'b1) begin
+                if(io_slave_bready == 1'b1) begin
                     next_state_w = IDLE;
                 end
                 else begin
@@ -250,66 +231,43 @@ module SRAM(
 
     always @(posedge clk or posedge reset) begin
         if(reset == 1'b1)begin
-            // s_bresp_r       <= 2'b00;
-            // s_bvalid_r      <= 1'b0;
             delay_cnt_w     <= 32'h00000000;
         end
         else begin
             case(next_state_w)
 
                 IDLE_W: begin
-                    // s_bresp_r       <= 2'b00;
-                    // s_bvalid_r      <= 1'b0;
                     delay_cnt_w     <= 32'h00000000;
-                end
-
-                WAIT_AWVALID: begin
-
-                end
-                
-                WAIT_WVALID: begin
                 end
 
                 WAIT_WDATA: begin
                     delay_cnt_w     <= delay_cnt_w + 1'b1;
                 end
 
-                WAIT_BREADY: begin                    
-                    // s_bresp_r       <= 2'b00;
-                    // s_bvalid_r      <= 1'b1;
-                end
-
-
                 default: begin
-                    // s_bresp_r       <= 2'b00;
-                    // s_bvalid_r      <= 1'b0;
                     delay_cnt_w     <= 32'h00000000;
                 end
             endcase
         end
     end
 
-    assign  s_awready       = (current_state_w == WAIT_AWVALID) ? 1'b1 : 1'b0;
-    assign  s_wready        = (current_state_w == WAIT_WVALID) ? 1'b1 : 1'b0;
-    assign  s_bvalid        = (current_state_w == WAIT_BREADY) ? 1'b1 : 1'b0;
-    assign  s_bresp         = 2'b00;    
+    assign  io_slave_awready       = (current_state_w == WAIT_AWVALID) ? 1'b1 : 1'b0;
+    assign  io_slave_wready        = (current_state_w == WAIT_WVALID) ? 1'b1 : 1'b0;
+    assign  io_slave_bvalid        = (current_state_w == WAIT_BREADY) ? 1'b1 : 1'b0;
+    assign  io_slave_bresp         = 2'b00;    
 
     
     // read w_addr
     always @ (posedge clk or posedge reset) begin 
         if(reset == 1'b1) begin
             waddr_r         <= 32'h00000000;
-            // s_awready_r     <= 1'b0;
         end
         else begin
-            if(s_awready == 1'b1 && s_awvalid == 1'b1) begin
-                waddr_r         <= s_awaddr;
-                // s_awready_r     <= 1'b0;
+            if(io_slave_awready == 1'b1 && io_slave_awvalid == 1'b1) begin
+                waddr_r         <= io_slave_awaddr;
             end
             else begin
-                // if(next_state_w == IDLE_W) begin
-                //     s_awready_r     <= 1'b1;
-                // end
+
             end 
         end
     end
@@ -318,13 +276,11 @@ module SRAM(
     always @ (posedge clk or posedge reset) begin // 握手，赋值一次，s_arready_r随即置零
         if(reset == 1'b1) begin
             delay_w         <= 32'h00000000;
-            // s_wready_r      <= 1'b0;
         end
         else begin
-            if(s_wvalid == 1'b1 && s_wready == 1'b1) begin
-                pmem_write_v(waddr_r, s_wstrb, s_wdata);
+            if(io_slave_wvalid == 1'b1 && io_slave_wready == 1'b1) begin
+                pmem_write_v(waddr_r, {4'b000, io_slave_wstrb}, io_slave_wdata);
                 delay_w         <= rand_v();
-                // s_wready_r      <= 1'b0;
             end
             else begin
 

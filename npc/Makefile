@@ -9,6 +9,8 @@ VERILATOR_CFLAGS += -MMD --build -cc  \
 BUILD_DIR = ./build
 OBJ_DIR = $(BUILD_DIR)/obj_dir
 BIN = $(BUILD_DIR)/$(TOPNAME)
+
+# EXCLUDE_FILE = ./vsrc/cpu_top.v
  
 default: $(BIN)
  
@@ -20,21 +22,11 @@ $(SRC_AUTO_BIND): $(NXDC_FILES)
 	python3 $(NVBOARD_HOME)/scripts/auto_pin_bind.py $^ $@
  
 # project source
-VSRCS = $(shell find $(abspath ./vsrc) -name "*.v")
-VSRCS += $(shell find $(abspath ../ysyxSoC/perip) -name "*.v")
-VSRCS += $(shell find $(abspath ../ysyxSoC/build) -name "*.v")
+VSRCS = $(shell find $(abspath ../ysyxSoC/vsrc) -name "*.v" -or -name "*.vh" )
+VSRCS += $(shell find $(abspath ./vsrc_npc) -name "*.v" )
 CSRCS = $(shell find $(abspath ./csrc) -name "*.c" -or -name "*.cc" -or -name "*.cpp")
 CSRCSS = $(shell find $(abspath ./csrc/src) -name "*.c" -or -name "*.cc" -or -name "*.cpp")
 CSRCS += $(SRC_AUTO_BIND)
-VSRC1 = $(wildcard ./vsrc/ALU_ysyx.v)
-VSRC2 = $(wildcard ./vsrc/MuxKey.v)
-VSRC3 = $(wildcard ./vsrc/MuxKeyInternal.v)
-VSRC4 = $(wildcard ./vsrc/MuxKeyWithDefault.v)
-VSRC5 = $(wildcard ./vsrc/SRAM.v)
-VSRC6 = $(wildcard ./vsrc/cpu_top.v)
-VSRC7 = $(wildcard ./vsrc/IFU_ysyx.v)
-VSRC8 = $(wildcard ./vsrc/IDU_ysyx.v)
-VSRC9 = $(wildcard ./vsrc/RegisterFile.v)
 
 SIM_ALU = $(wildcard ./sim_file/sim_alu.cpp)
 SIM_SRAM = $(wildcard ./sim_file/sim_sram.cpp)
@@ -72,12 +64,11 @@ sim:
 	./obj_dir/VALU_ysyx
 
 run:
-	verilator -Wno-fatal --cc $(VSRCS) --exe $(CSRCSS) -LDFLAGS -lreadline -CFLAGS "-I/home/dengzibin/ysyx-workbench/npc/csrc/include" \
-		--top-module ysyxSoCTop --trace-fst  --timescale "1ns/1ns" --autoflush --no-timing +incdir+../ysyxSoC/perip/uart16550/rtl +incdir+../ysyxSoC/perip/spi/rtl
-	make -C obj_dir -f VysyxSoCTop.mk VysyxSoCTop
-#    ./obj_dir/VysyxSoCTop -l /home/dengzibin/ysyx-workbench/npc/build/npc-log.txt --diff=/home/dengzibin/ysyx-workbench/npc/csrc/src/tools/nemu-diff/build/riscv32-nemu-interpreter-so $(ARGS) $(IMG)
-#	./obj_dir/VysyxSoCTop -b /home/dengzibin/ysyx-workbench/am-kernels/tests/char-test/build/char-test.bin
-    ./obj_dir/VysyxSoCTop -l /home/dengzibin/ysyx-workbench/npc/build/npc-log.txt $(ARGS) $(IMG)
+	verilator -Wno-fatal --cc $(VSRCS) -I/home/dengzibin/ysyx-workbench/ysyxSoC/vsrc --exe $(CSRCSS) -LDFLAGS -lreadline -CFLAGS "-I/home/dengzibin/ysyx-workbench/npc/csrc/include"\
+		--top-module npc_top --trace-fst
+	make -C obj_dir -f Vnpc_top.mk Vnpc_top
+	./obj_dir/Vnpc_top $(ARGS) $(IMG)
+
 run_nv: $(BIN)
 	@$^
 
@@ -85,3 +76,8 @@ clean_obj:
 	rm -rf $(BUILD_DIR)
  
 .PHONY2: default all clean run
+
+debug:
+	@echo "All files found:"
+	@echo "\nFiles after exclusion:"
+	@echo $(VSRCS)

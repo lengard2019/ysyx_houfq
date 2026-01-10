@@ -15,8 +15,8 @@
 
 // #include <isa.h>
 #include <paddr.h>
-#include <flash.h>
-#include <mrom.h>
+// #include <flash.h>
+// #include <mrom.h>
 #include <stdio.h>
 #include <cpu/iringbuf.h>
 // #include <cpu/ifetch.h>
@@ -70,7 +70,7 @@ static long load_img() {
 
   fseek(fp, 0, SEEK_SET);
   // int ret = fread(guest_to_host(RESET_VECTOR), size, 1, fp); //
-  int ret = fread(guest_to_host_flash(0x00000000), size, 1, fp); //
+  int ret = fread(guest_to_host(RESET_VECTOR), size, 1, fp); //
   assert(ret == 1);
 
   fclose(fp);

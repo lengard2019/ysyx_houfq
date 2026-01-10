@@ -38,7 +38,7 @@ static inline bool in_pmem(paddr_t addr) {
   return addr - CONFIG_MBASE < CONFIG_MSIZE;
 }
 
-word_t pmem_read(paddr_t addr, int len);
-void pmem_write(paddr_t addr, int len, word_t data);
+word_t pmem_read(paddr_t addr, uint8_t len);
+void pmem_write(paddr_t addr, uint8_t mask, word_t data);
 
 #endif
