@@ -159,7 +159,7 @@ module SRAM(
     assign io_slave_arready     = (current_state == WAIT_ARVALID) ? 1'b1 : 1'b0;
     assign io_slave_rvalid      = (current_state == WAIT_RLAST) ? 1'b1 : 1'b0;
     assign io_slave_rdata       = (current_state == WAIT_RLAST) ? data_r : 32'hffffffff;
-    assign io_slave_rresp       = (current_state == WAIT_RLAST) ? 2'b00 : 2'b11;
+    assign io_slave_rresp       = 2'b00;
 
 
     reg     [3:0]   current_state_w;

@@ -19,6 +19,9 @@
 #include <cpu/cpu.h>
 #include <paddr.h>
 #include <utils.h>
+#include "svdpi.h"
+#include "Vnpc_top__Dpi.h"
+#include <cpu/difftest.h>
 // #include <difftest-def.h>
 
 void (*ref_difftest_memcpy)(paddr_t addr, void *buf, size_t n, bool direction) = NULL;
@@ -56,7 +59,7 @@ bool isa_difftest_checkregs(NPC_state *ref_r, vaddr_t pc) {
 
 // this is used to let ref skip instructions which
 // can not produce consistent behavior with NEMU
-void difftest_skip_ref() {
+extern "C" void difftest_skip_ref() {
   is_skip_ref = true;
   // If such an instruction is one of the instruction packing in QEMU
   // (see below), we end the process of catching up with QEMU's pc to
@@ -160,6 +163,7 @@ void difftest_step(vaddr_t pc, vaddr_t npc) { // pc dnpc
 }
 #else
 void init_difftest(char *ref_so_file, long img_size, int port) { }
+extern "C" void difftest_skip_ref() { }
 #endif
 
 

@@ -95,7 +95,7 @@ module npc_top(
         .io_slave_rdata    	(io_slave_rdata     ),
         .io_slave_rlast    	(io_slave_rlast     ),
         .io_slave_rid      	(io_slave_rid       ),
-        .clock             	(clk              ),
+        .clock             	(clk                ),
         .reset             	(reset              ),
         .io_interrupt      	(io_interrupt       )
     );
@@ -115,8 +115,8 @@ module npc_top(
     wire [3:0]      io_master_rid;
     
     SRAM u_SRAM(
-        .clk              	(clk               ),
-        .reset            	(reset             ),
+        .clk              	(clk                ),
+        .reset            	(reset              ),
         .io_slave_awready 	(io_master_awready  ),
         .io_slave_awvalid 	(io_master_awvalid  ),
         .io_slave_awaddr  	(io_master_awaddr   ),

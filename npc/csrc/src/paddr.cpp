@@ -162,8 +162,9 @@ extern "C" void pmem_write_v(int addr, char mask, int data){
   } 
 }
 
-int rand_v(){
-  return rand() % 4 + 1;
+extern "C" int rand_v(){
+  // return rand() % 16 + 1;
+  return 32;
 }
 
 
