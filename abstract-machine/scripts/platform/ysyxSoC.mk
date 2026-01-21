@@ -20,6 +20,7 @@ LDFLAGS   += --gc-sections -e _start
 YSYXSOCFLAGS += -l $(shell dirname $(IMAGE).elf)/ysyxSoC-log.txt
 YSYXSOCFLAGS += -f $(IMAGE).elf
 YSYXSOCFLAGS  += -b
+YSYXSOCFLAGS  += -d /home/dengzibin/ysyx-workbench/ysyxSoC/csrc/src/tools/nemu-diff/build/riscv32-nemu-interpreter-so
 
 MAINARGS_MAX_LEN = 64
 MAINARGS_PLACEHOLDER = The insert-arg rule in Makefile will insert mainargs here.
