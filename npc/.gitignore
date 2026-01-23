@@ -13,3 +13,5 @@ build/
 obj_dir/
 *.vcd
 *.fst
+CacheSim/build/
+csrc/include/config.h
