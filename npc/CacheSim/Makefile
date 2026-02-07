@@ -1,8 +1,10 @@
 
 BUILD = ./build
 CSRC = $(shell find $(abspath ./csrc) -name "*.c")
-INCLUDE = ./
+INCLUDE = ./csrc/include
+
+ARGS ?= 
 
 run: 
-	gcc -o $(BUILD)/cachesim $(CSRC) -I
-	$(BUILD)/cachesim /home/dengzibin/ysyx-workbench/nemu/build/pctrace_train.bin
+	gcc -o $(BUILD)/cachesim $(CSRC) -I$(INCLUDE)
+	$(BUILD)/cachesim /home/dengzibin/ysyx-workbench/npc/CacheSim/build/pctrace_train.bin $(ARGS)

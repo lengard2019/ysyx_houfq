@@ -9,14 +9,14 @@ SECTIONS {
 
     .entry : {
         KEEP(*(.entry))
-        . = ALIGN(8); 
+        . = ALIGN(0x10); 
     } > SDRAM AT > FLASH
 
     .copy_routine : {
         _copy_routine_load_start = LOADADDR(.copy_routine);
         _copy_routine_start = .;
         KEEP(*(.copy_routine))
-        . = ALIGN(8); 
+        . = ALIGN(0x10); 
         _copy_routine_end = .;
     } > SDRAM AT > FLASH
 

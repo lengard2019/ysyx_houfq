@@ -163,7 +163,7 @@ void difftest_step(vaddr_t pc, vaddr_t npc) { // pc dnpc
 }
 #else
 void init_difftest(char *ref_so_file, long img_size, int port) { }
-extern "C" void difftest_skip_ref() { }
+// static inline void difftest_skip_ref() { }
 #endif
 
 
