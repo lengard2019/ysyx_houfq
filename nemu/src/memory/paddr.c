@@ -17,9 +17,11 @@
 #include <memory/paddr.h>
 #include <device/mmio.h>
 #include <isa.h>
+#include <cpu/cpu.h>
 
-#define MTRACE_LOW 0x80000000
-#define MTRACE_HIGH 0x80000800
+#define MTRACE_LOW 0x80262b80
+#define MTRACE_HIGH 0x80262c00
+#define CONFIG_MTRACE_COND 1
 
 #if   defined(CONFIG_PMEM_MALLOC)
 static uint8_t *pmem = NULL;
@@ -58,7 +60,8 @@ word_t paddr_read(paddr_t addr, int len) {
     word_t val = pmem_read(addr, len);
 #ifdef CONFIG_MTRACE_COND 
     if(addr >= MTRACE_LOW && addr < MTRACE_HIGH){
-      log_write("load: addr = %08x, val = %08x\n", addr, val);
+      vaddr_t pc = cpu_state();
+      log_write("pc = %08x; load: addr = %08x, val = %08x\n", pc, addr, val);
     }
 #endif
     return val;}
@@ -71,7 +74,8 @@ void paddr_write(paddr_t addr, int len, word_t data) {
   if (likely(in_pmem(addr))) { 
 #ifdef CONFIG_MTRACE_COND 
     if(addr >= MTRACE_LOW && addr < MTRACE_HIGH){
-      log_write("save: addr = %08x, len = %d, val = %08x\n", addr, len, data);
+      vaddr_t pc = cpu_state();
+      log_write("pc = %08x; save: addr = %08x, len = %d, val = %08x\n", pc, addr, len, data);
     }
 #endif    
     pmem_write(addr, len, data); return; }
