@@ -32,6 +32,7 @@ SECTIONS {
         . = ALIGN(0x4);
         _rodata_start = .;
         *(.rodata*)
+        *(.srodata*)
         . = ALIGN(0x4);
         _rodata_end = .;
     } > SDRAM AT > FLASH
