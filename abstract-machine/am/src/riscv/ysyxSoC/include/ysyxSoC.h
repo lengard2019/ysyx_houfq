@@ -48,7 +48,9 @@
 
 #define RTC_ADDR        0x02000000
 #define KBD_ADDR        0x10011000
-#define VGACTL_ADDR     0x21000000
+// #define VGACTL_ADDR     0x21000000
+#define FB_ADDR         0x21000000
+
 
 #define GPIO_ADDR       0x10002000
 
